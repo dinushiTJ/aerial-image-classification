@@ -1,0 +1,1 @@
+This script was not used for captioning. Captioning the sample data was done in Kaggle.
