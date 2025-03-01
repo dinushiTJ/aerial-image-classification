@@ -85,7 +85,6 @@ def upscale(dataset_name: str, version_tag: str, huggingface_token: str):
         click.echo("✅ Done!")
     except DatasetNotFoundError:
         click.echo("The dataset does not exist on the huggingface hub", err=True)
-    click.echo("✅ Done!")
 
 
 if __name__ == '__main__':
