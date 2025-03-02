@@ -178,3 +178,8 @@ caption/output
 generation/generated*
 similarity/real*
 similarity/synthetic*
+train/dataset*
+train/*_models
+train/wandb
+wandb
+*.sh
