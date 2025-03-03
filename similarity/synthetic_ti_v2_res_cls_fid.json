@@ -1,0 +1,54 @@
+{
+  "broadleaved_indigenous_hardwood": {
+    "token": "BIH",
+    "fid": 94.26380920410156
+  },
+  "deciduous_hardwood": {
+    "token": "DHW",
+    "fid": 96.594970703125
+  },
+  "grose_broom": {
+    "token": "GBM",
+    "fid": 95.20284271240234
+  },
+  "harvested_forest": {
+    "token": "HFT",
+    "fid": 87.64556884765625
+  },
+  "herbaceous_freshwater_vege": {
+    "token": "HFV",
+    "fid": 109.09671020507812
+  },
+  "high_producing_grassland": {
+    "token": "HPG",
+    "fid": 99.76596069335938
+  },
+  "indigenous_forest": {
+    "token": "IFT",
+    "fid": 101.11738586425781
+  },
+  "lake_pond": {
+    "token": "LPD",
+    "fid": 113.94845581054688
+  },
+  "low_producing_grassland": {
+    "token": "LPG",
+    "fid": 84.49589538574219
+  },
+  "manuka_kanuka": {
+    "token": "MKA",
+    "fid": 141.28956604003906
+  },
+  "shortrotation_cropland": {
+    "token": "SRC",
+    "fid": 163.30459594726562
+  },
+  "urban_build_up": {
+    "token": "UBU",
+    "fid": 158.14828491210938
+  },
+  "urban_parkland": {
+    "token": "UPL",
+    "fid": 112.47613525390625
+  }
+}
