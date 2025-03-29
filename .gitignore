@@ -178,6 +178,7 @@ cython_debug/
 # Research
 caption/input
 caption/output
+dataset/synthetic_best*
 generation/generated*
 similarity/real*
 similarity/synthetic*
