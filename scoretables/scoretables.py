@@ -14,10 +14,12 @@ json_files = [
     "synthetic_v1_res_ds_fid.json", "synthetic_v1_res_ds.json",
     "synthetic_v1_upscaled_res_ds_fid.json", "synthetic_v1_upscaled_res_ds.json",
     "synthetic_v2_res_ds_fid.json", "synthetic_v2_res_ds.json",
-    "synthetic_v2_upscaled_res_ds_fid.json", "synthetic_v2_upscaled_res_ds.json"
+    "synthetic_v2_upscaled_res_ds_fid.json", "synthetic_v2_upscaled_res_ds.json",
+    "synthetic_best_cmmd_res_ds.json", "synthetic_best_cmmd_res_ds_fid.json",
+    "synthetic_best_fid_res_ds.json", "synthetic_best_fid_res_ds_fid.json"
 ]
 
-base_dir = "/Users/dinushijayasinghe/Desktop/R2/aerial-image-classification/similarity/"
+base_dir = "../similarity"
 
 combined_data = {}
 
@@ -32,11 +34,14 @@ for file in sorted(json_files):
             base_name = base_name.replace(".json", "")
             base_name = base_name.replace("synthetic_", "")
             base_name = base_name.replace("upscaled", "up")
+
+            if base_name == "best":
+                base_name = "best_fid"
             
             if base_name not in combined_data:
                 combined_data[base_name] = {"Dataset": base_name, "CMMD": "-", "FID": "-"}
             
-            if "_fid" in file:
+            if file.endswith("_fid.json"):
                 fid_score = data.get("dataset_fid_score")
                 if fid_score is not None:
                     combined_data[base_name]["FID"] = fid_score
@@ -49,6 +54,9 @@ combined_df = pd.DataFrame(list(combined_data.values()))
 
 print("CMMD and FID Scores Table:")
 print(combined_df.to_string(index=False))
+
+combined_df.to_csv("ds_scores.csv")
+combined_df.to_json("ds_scores.json")
 
 # Plotting
 fig, ax1 = plt.subplots(figsize=(12, 6))
