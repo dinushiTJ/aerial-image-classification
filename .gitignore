@@ -185,5 +185,6 @@ similarity/synthetic*
 train/dataset*
 train/*_models
 train/wandb
+utils/saved_datasets
 wandb
 *.sh

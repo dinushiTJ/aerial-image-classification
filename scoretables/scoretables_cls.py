@@ -16,7 +16,7 @@ json_files = [
     "synthetic_v2_upscaled_res_cls_fid.json", "synthetic_v2_upscaled_res_cls.json"
 ]
 
-base_dir = "/Users/dinushijayasinghe/Desktop/R2/aerial-image-classification/similarity/"
+base_dir = "../similarity/"
 
 # Dictionary to store data for each class
 class_data = {}
@@ -73,32 +73,32 @@ for token, entries in class_data.items():
     print(f"Lowest FID: {lowest_fid['FID']} (Dataset: {lowest_fid['Dataset']})")
     print("\n" + "=" * 50 + "\n")
 
-    # Plotting
-    fig, ax1 = plt.subplots(figsize=(12, 6))
+    # # Plotting
+    # fig, ax1 = plt.subplots(figsize=(12, 6))
 
-    # Sort datasets properly
-    df["Dataset"] = pd.Categorical(df["Dataset"], categories=df["Dataset"].unique(), ordered=True)
-    df.sort_values("Dataset", inplace=True)
+    # # Sort datasets properly
+    # df["Dataset"] = pd.Categorical(df["Dataset"], categories=df["Dataset"].unique(), ordered=True)
+    # df.sort_values("Dataset", inplace=True)
 
-    color = "tab:blue"
-    ax1.set_xlabel("Dataset")
-    ax1.set_ylabel("CMMD", color=color)
-    ax1.plot(df["Dataset"], df["CMMD"], color=color, marker="o", label="CMMD")
-    ax1.tick_params(axis="y", labelcolor=color)
+    # color = "tab:blue"
+    # ax1.set_xlabel("Dataset")
+    # ax1.set_ylabel("CMMD", color=color)
+    # ax1.plot(df["Dataset"], df["CMMD"], color=color, marker="o", label="CMMD")
+    # ax1.tick_params(axis="y", labelcolor=color)
 
-    # Second axis for FID
-    ax2 = ax1.twinx()
-    color = "tab:red"
-    ax2.set_ylabel("FID", color=color)
-    ax2.plot(df["Dataset"], df["FID"], color=color, marker="x", label="FID")
-    ax2.tick_params(axis="y", labelcolor=color)
+    # # Second axis for FID
+    # ax2 = ax1.twinx()
+    # color = "tab:red"
+    # ax2.set_ylabel("FID", color=color)
+    # ax2.plot(df["Dataset"], df["FID"], color=color, marker="x", label="FID")
+    # ax2.tick_params(axis="y", labelcolor=color)
 
-    # Formatting
-    plt.title(f"CMMD and FID Scores by Dataset (Class: {token})")
-    fig.tight_layout()
-    plt.xticks(rotation=45, ha="right")
+    # # Formatting
+    # plt.title(f"CMMD and FID Scores by Dataset (Class: {token})")
+    # fig.tight_layout()
+    # plt.xticks(rotation=45, ha="right")
 
-    ax1.legend(loc="upper left")
-    ax2.legend(loc="upper right")
+    # ax1.legend(loc="upper left")
+    # ax2.legend(loc="upper right")
 
-    plt.show()
+    # plt.show()
