@@ -1,0 +1,18 @@
+CMMD and FID Scores Table:
+  Dataset     CMMD       FID
+best_cmmd 0.381589 36.039032
+ best_fid 0.424981 34.749237
+    ti_v1 1.407981 64.547363
+ ti_v1_up 1.235843 63.555145
+    ti_v2 1.290917 62.077499
+ ti_v2_up 1.169443 61.313660
+       v0 0.420213 37.050232
+    v0_up 0.808358 53.141510
+       v1 0.469327 38.422485
+    v1_up 0.821352 51.583710
+       v2 0.463486 43.188797
+    v2_up 0.782847 52.671906
+
+Lowest Scores:
+Lowest CMMD: 0.3815889358520508 (Dataset: best_cmmd)
+Lowest FID: 34.749237060546875 (Dataset: best_fid)

@@ -58,6 +58,13 @@ print(combined_df.to_string(index=False))
 combined_df.to_csv("ds_scores.csv")
 combined_df.to_json("ds_scores.json")
 
+# Find lowest CMMD and FID scores
+lowest_cmmd = combined_df.loc[combined_df['CMMD'].idxmin()]
+lowest_fid = combined_df.loc[combined_df['FID'].idxmin()]
+print("\nLowest Scores:")
+print(f"Lowest CMMD: {lowest_cmmd['CMMD']} (Dataset: {lowest_cmmd['Dataset']})")
+print(f"Lowest FID: {lowest_fid['FID']} (Dataset: {lowest_fid['Dataset']})")
+
 # Plotting
 fig, ax1 = plt.subplots(figsize=(12, 6))
 
