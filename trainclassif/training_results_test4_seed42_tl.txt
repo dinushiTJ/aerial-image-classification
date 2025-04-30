@@ -1,0 +1,11 @@
+Dataset: dushj98/aerial-imagery-mini
+Random Seed: 42
+Training Mode: Feature extraction
+
+Model           | Best Val Acc | Best Epoch | Train Time
+--------------------------------------------------------
+mobilenet_v2    |      7.69% |          0 |       0.2m
+resnet50        |     11.54% |          5 |       0.2m
+efficientnet_b2 |     11.54% |          5 |       0.1m
+efficientnetv2_m |     11.54% |          5 |       0.2m
+vit_b_16        |     19.23% |          5 |       0.2m

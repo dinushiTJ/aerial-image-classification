@@ -1,0 +1,11 @@
+Dataset: dushj98/aerial_real_only
+Random Seed: 42
+Training Mode: Fine-tuning
+
+Model            | Best Val Acc | Best Epoch | Train Time
+----------------------------------------------------------
+mobilenet_v2     |     48.50%   |          1 |       6.7m
+resnet50         |     50.00%   |         24 |      15.0m
+efficientnet_b2  |     49.98%   |          1 |       6.9m
+efficientnetv2_m |     50.18%   |         19 |      32.9m
+vit_b_16         |     47.63%   |         11 |      38.1m

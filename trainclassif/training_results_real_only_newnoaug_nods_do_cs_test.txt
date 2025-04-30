@@ -1,0 +1,11 @@
+Dataset: dushj98/aerial_real_only
+Seed Used: 42
+Training Mode(s) Attempted: sft (effective modes may vary per run)
+
+Model              | Best Val Acc | Best Epoch | Train Time (m) | Status
+-----------------------------------------------------------------------------
+mobilenet_v2       |       47.84% |         25 |           20.0 | ✅ Success
+resnet50           |       46.57% |         23 |           19.7 | ✅ Success
+efficientnet_b2    |       46.41% |         25 |           19.7 | ✅ Success
+efficientnetv2_m   |       47.14% |          8 |           16.0 | ✅ Success
+vit_b_16           |       48.53% |          4 |            9.9 | ✅ Success

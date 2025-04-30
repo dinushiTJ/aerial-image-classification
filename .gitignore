@@ -185,6 +185,12 @@ similarity/synthetic*
 train/dataset*
 train/*_models
 train/wandb
+trainclassif/wandb
+trainclassif/.cache
+trainclassif/best_*
+trainclassif/checkpoints/*
+trainclassif/commands*
+trainclassif/train.sh
 utils/saved_datasets
 wandb
 *.sh
