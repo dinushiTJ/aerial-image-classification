@@ -1719,7 +1719,7 @@ def train(
     # Save Summary Results to File
     summary_filename = f"training_summary_{run_name}_seed{seed}.json"
     summary_data = {
-        "script_args": click.get_current_context().params,  # Log CLI args
+        "script_args": {k: v for k, v in click.get_current_context().params if "token" in k},  # Log CLI args
         "dataset": dataset_name,
         "seed": seed,
         "models_attempted": models_to_train,
