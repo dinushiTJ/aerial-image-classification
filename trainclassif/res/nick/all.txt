@@ -1,0 +1,56 @@
+resnet50
+
+Epoch 44/49
+----------
+train Loss: 1.6443 Acc: 0.4445
+val Loss: 1.7905 Acc: 0.4033
+Early stopping at 44 because lowest accuracy was 38
+Training complete in 13m 10s
+Best val Acc: 0.411792
+
+
+---
+
+resnet152
+
+Epoch 27/49
+----------
+train Loss: 1.6862 Acc: 0.4369
+val Loss: 1.8137 Acc: 0.4023
+
+Epoch 28/49
+----------
+train Loss: 1.6749 Acc: 0.4450
+val Loss: 1.7940 Acc: 0.4030
+Early stopping at 28 because lowest accuracy was 22
+Training complete in 16m 28s
+Best val Acc: 0.403731
+
+
+---
+
+efficientnetB6
+
+Epoch 46/49
+----------
+train Loss: 1.9112 Acc: 0.3823
+val Loss: 2.0228 Acc: 0.3363
+
+Epoch 47/49
+----------
+train Loss: 1.8927 Acc: 0.3899
+val Loss: 2.0160 Acc: 0.3386
+
+Epoch 48/49
+----------
+train Loss: 1.8996 Acc: 0.3842
+val Loss: 2.0141 Acc: 0.3390
+
+Epoch 49/49
+----------
+train Loss: 1.8902 Acc: 0.3966
+val Loss: 2.0095 Acc: 0.3381
+
+Training complete in 27m 11s
+Best val Acc: 0.339014
+

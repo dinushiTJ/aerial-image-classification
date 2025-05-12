@@ -1,0 +1,47 @@
+program: trainer_v7_wandb.py
+method: bayes  # random, grid
+project: mobilenet-v2-sweep-7cls-fft
+metric:
+  name: best_val_acc
+  goal: maximize
+parameters:
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-6
+    max: 5e-4
+  augment_level:
+    values: ["none", "basic", "medium"]
+  dropout_p:
+    distribution: uniform
+    min: 0.1
+    max: 0.6
+  weight_decay:
+    distribution: log_uniform_values
+    min: 0.01
+    max: 0.2
+  label_smoothing:
+    values: [0.0, 0.1, 0.2]
+  epochs:
+    value: 30
+  batch_size:
+    values: [16, 32, 64]
+  model:
+    value: "mobilenet_v2"
+  input_size:
+    value: 224
+  dataset_name:
+    value: dushj98/waikato_aerial_imagery_2017_7cls  # "dushj98/aerial_real_only"
+  training_mode:
+    value: "fft"
+  layers_to_unfreeze:
+    value: ["features.14.", "features.15.", "features.16.", "features.17.", "features.18."]
+  calc_dataset_stats:
+    value: False
+  use_mixed_precision:
+    value: True
+  patience:
+    value: 10
+  scheduler:
+    value: "cosine"  # ["cosine", "plateau", "none"]
+  seed:
+    value: 42

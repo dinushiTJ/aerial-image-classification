@@ -1,0 +1,61 @@
+resnet50
+
+Epoch 47/49
+----------
+train Loss: 1.1173 Acc: 0.6123
+validation Loss: 1.2192 Acc: 0.5726
+
+Epoch 48/49
+----------
+train Loss: 1.1262 Acc: 0.6097
+validation Loss: 1.2132 Acc: 0.5745
+
+Epoch 49/49
+----------
+train Loss: 1.1044 Acc: 0.6149
+validation Loss: 1.2227 Acc: 0.5618
+
+Training complete in 7m 34s
+Best val Acc: 0.575599
+
+
+---
+
+resnet152
+
+Epoch 41/49
+----------
+train Loss: 1.0893 Acc: 0.6190
+validation Loss: 1.2102 Acc: 0.5749
+
+Epoch 42/49
+----------
+train Loss: 1.0971 Acc: 0.6186
+validation Loss: 1.2163 Acc: 0.5752
+
+Epoch 43/49
+----------
+train Loss: 1.0837 Acc: 0.6287
+validation Loss: 1.2099 Acc: 0.5797
+Early stopping at 43 because lowest accuracy was 37
+Training complete in 13m 13s
+Best val Acc: 0.579716
+
+
+---
+
+efficientnetB6
+
+Epoch 37/49
+----------
+train Loss: 1.4350 Acc: 0.5359
+validation Loss: 1.5220 Acc: 0.4824
+
+Epoch 38/49
+----------
+train Loss: 1.4384 Acc: 0.5213
+validation Loss: 1.5211 Acc: 0.4828
+Early stopping at 38 because lowest accuracy was 32
+Training complete in 11m 19s
+Best val Acc: 0.484656
+

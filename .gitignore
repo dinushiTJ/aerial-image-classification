@@ -194,3 +194,5 @@ trainclassif/train.sh
 utils/saved_datasets
 wandb
 *.sh
+dataset/*cls
+dataset/all

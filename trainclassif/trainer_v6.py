@@ -5,6 +5,7 @@ import random
 import time
 import traceback
 from typing import Any
+from datetime import datetime
 
 import click
 import numpy as np
@@ -1712,14 +1713,15 @@ def train(
     print("\n" + table_str)
 
     # Save to file
-    output_file = f"training_results_{run_name}_seed{seed}_{actual_training_mode}.md"
+    date_str = datetime.now().strftime('%Y_%m_%d')
+    output_file = f"{date_str}_t_res_{run_name}_seed{seed}_{actual_training_mode}.md"
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(table_str)
 
     # Save Summary Results to File
     summary_filename = f"training_summary_{run_name}_seed{seed}.json"
     summary_data = {
-        "script_args": {k: v for k, v in click.get_current_context().params if "token" in k},  # Log CLI args
+        "script_args": {k: v for k, v in click.get_current_context().params.items() if "token" in k},  # Log CLI args
         "dataset": dataset_name,
         "seed": seed,
         "models_attempted": models_to_train,
