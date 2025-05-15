@@ -201,6 +201,7 @@
   "epochs_since_improvement": 7,
   "f1/train": 0.99871332042288,
   "f1/val": 0.7476897433549193,
+  "final_learning_rate": 0.000007589184704246327,
   "loss/train": 0.44863823363066024,
   "loss/val": 1.2129357376600352,
   "precision/train": 0.9987139634815796,
