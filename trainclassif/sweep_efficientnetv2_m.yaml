@@ -1,6 +1,6 @@
 program: trainer_v7_wandb.py
 method: bayes  # random, grid
-project: efficientnetv2-m-sweep-7cls-fft
+project: efficientnetv2-m-sweep-7cls-sft
 metric:
   name: best_val_acc
   goal: maximize
@@ -24,7 +24,7 @@ parameters:
   epochs:
     value: 30
   batch_size:
-    value: 64
+    value: 32
   model:
     value: "efficientnetv2_m"
   input_size:
@@ -32,7 +32,7 @@ parameters:
   dataset_name:
     value: dushj98/waikato_aerial_imagery_2017_7cls  # "dushj98/aerial_real_only"
   training_mode:
-    value: "fft"
+    value: "sft"
   layers_to_unfreeze:
     value: ["features.6", "features.7", "features.8"]
   calc_dataset_stats:

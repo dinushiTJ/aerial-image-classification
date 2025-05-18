@@ -3,12 +3,9 @@ import os
 import random
 import time
 import traceback
-from collections import Counter
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime
-from typing import Any
-from typing import Literal
-from typing import TypedDict
+from typing import Any, Literal, TypedDict
 
 import numpy as np
 import torch
@@ -16,10 +13,7 @@ import wandb
 from datasets import get_dataset_infos
 from datasets import load_dataset
 from dotenv import load_dotenv
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import f1_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
+from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score
 from tabulate import tabulate
 from torch import device
 from torch import set_grad_enabled
@@ -36,6 +30,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.optim.lr_scheduler import LRScheduler
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
+from torch.utils.data import default_collate
 from torchvision import models
 from torchvision.transforms import v2 as transforms
 from tqdm.auto import tqdm
@@ -246,6 +241,8 @@ def load_data(
     augment_level: AugmentationLevel,
     dataset_mean: list | None,
     dataset_std: list | None,
+    cutmix_or_mixup: transforms.Transform | None,
+    num_classes: int,
 ) -> dict[str, DataLoader]:
     """Loads and preprocesses the dataset with optional augmentation
     and custom normalization and returns a dictionary containing
@@ -258,7 +255,6 @@ def load_data(
     print("Val label distribution:", Counter(dataset["validation"]["label"]))
     print("Unique train labels:", sorted(set(dataset["train"]["label"])))
     print("Unique val labels:", sorted(set(dataset["validation"]["label"])))
-
 
     if dataset_mean and dataset_std:
         print("Using dataset-specific normalization")
@@ -371,6 +367,24 @@ def load_data(
 
     dataset.set_format(type="torch", columns=["image", "label"])
 
+    if cutmix_or_mixup:
+        def collate_fn(batch):
+            collated_batch = default_collate(batch)
+            images = collated_batch["image"]
+            labels = collated_batch["label"] # labels are currently torch.long
+
+            # Convert integer labels to one-hot encoded float tensor
+            # num_classes is available from the outer scope
+            labels_one_hot = torch.nn.functional.one_hot(labels, num_classes=num_classes).float()
+
+            # Apply CutMix or MixUp
+            return cutmix_or_mixup(images, labels_one_hot) # Pass the one-hot encoded labels
+
+        collate_func = collate_fn
+
+    else:
+        collate_func = None
+
     # create DataLoaders
     num_workers = os.cpu_count() // 2 if os.cpu_count() else 4
     print(f"Using {num_workers} workers for DataLoaders.")
@@ -387,6 +401,7 @@ def load_data(
                 True if num_workers > 0 and is_cuda_available() else False
             ),
             drop_last=False,  # was True originally
+            collate_fn=collate_func,
         ),
         "val": DataLoader(
             dataset["validation"],
@@ -580,7 +595,7 @@ def train_model(
     patience: int,
     use_mixed_precision: bool,
     class_names: list[str],
-    cutmix_or_mixup: transforms.RandomChoice | None,
+    cutmix_or_mixup: bool,
 ) -> tuple[Module, dict[str, Any]]:
     """
     Trains the model for a specified number of epochs with early stopping.
@@ -622,24 +637,19 @@ def train_model(
     model.to(dev)
     print(f"🏋️‍♀️ Starting training on device: {dev}")
 
-    # initialize gradient scaler for mixed
-    # precision if enabled and available
+    # initialize gradient scaler for mixed precision if enabled and available
     scaler = None
     amp_enabled = use_mixed_precision and dev.type == "cuda"
     if amp_enabled:
         try:
-            from torch.amp import GradScaler
-            from torch.amp import autocast
-
+            from torch.amp import GradScaler, autocast
             scaler = GradScaler()
             print("⚡ Automatic Mixed Precision (AMP) Enabled.")
         except ImportError:
             print("⚠️ Warning: torch.amp not available. Disabling Mixed Precision.")
             amp_enabled = False  # disable if import fails
     else:
-        print(
-            f"⚠️ Automatic mixed precision: {'Disabled' if not use_mixed_precision else 'Unavailable (not on CUDA)'}."
-        )
+        print(f"⚠️ Automatic mixed precision: {'Disabled' if not use_mixed_precision else 'Unavailable (not on CUDA)'}.")
 
     # epoch progress bar
     epoch_pbar = tqdm(range(num_epochs), desc="Epochs", position=0, leave=True)
@@ -658,6 +668,9 @@ def train_model(
             running_corrects = 0
             all_preds = []
             all_labels = []
+            
+            # Check if we should calculate standard classification metrics in this phase/configuration
+            calculate_standard_metrics = not is_train or not cutmix_or_mixup
 
             # batch progress bar
             batch_pbar = tqdm(
@@ -669,12 +682,18 @@ def train_model(
             )
 
             for batch in batch_pbar:
-                inputs = batch["image"].to(dev, non_blocking=True)
-                labels = batch["label"].to(dev, non_blocking=True)
+                # Dataloader for train might return (images, one_hot_labels) tuple
+                # Dataloader for val will return dictionary {"image": images, "label": integer_labels}
+                if (isinstance(batch, tuple) or isinstance(batch, list)) and len(batch) == 2:
+                    # This happens during training if collate_fn is used
+                     inputs, labels = batch # labels will be one_hot float tensors
+                else:
+                    # This happens during validation, or training without custom collate_fn
+                    inputs = batch["image"]
+                    labels = batch["label"] # labels will be integer long tensors
 
-                # cutmix/mixup
-                if is_train and cutmix_or_mixup:
-                    inputs, labels = cutmix_or_mixup(inputs, labels)
+                inputs = inputs.to(dev, non_blocking=True)
+                labels = labels.to(dev, non_blocking=True) # Labels on device, type depends on phase/collate_fn
 
                 # zero gradients before forward pass
                 optimizer.zero_grad(set_to_none=True)  # more memory efficient
@@ -684,16 +703,16 @@ def train_model(
                     if amp_enabled:
                         from torch.amp import autocast  # import locally for clarity
 
-                        with autocast(
-                            device_type="cuda:0" if is_cuda_available() else "cpu"
-                        ):
+                        with autocast(device_type="cuda:0" if is_cuda_available() else "cpu"):
                             outputs = model(inputs)
+                            # Loss calculation works with either integer or one_hot/mixed labels
                             loss = criterion(outputs, labels)
                     else:  # default precision
                         outputs = model(inputs)
                         loss = criterion(outputs, labels)
 
                     # get predictions (index of max logit)
+                    # This always gives integer class indices, regardless of label format
                     _, preds = torch.max(outputs, 1)
 
                 # backward pass + optimize only if in training phase
@@ -713,70 +732,89 @@ def train_model(
 
                 # statistics update
                 batch_loss = loss.item()
-                running_loss += batch_loss * inputs.size(
-                    0
-                )  # accumulate loss scaled by batch size
-                running_corrects += torch.sum(
-                    preds == labels.data
-                ).item()  # accumulate correct predictions
+                running_loss += batch_loss * inputs.size(0)  # accumulate loss scaled by batch size
 
-                # store predictions and labels for epoch-level metrics (F1, etc.)
-                all_preds.extend(preds.cpu().numpy())
-                all_labels.extend(labels.cpu().numpy())
+                # Standard Metric Calculation: Only if we should calculate them (validation or train without mixup)
+                if calculate_standard_metrics:
+                    # Use the original integer labels for metric calculation if available
+                    # During validation, 'labels' is already the integer tensor
+                    # During training without mixup, 'labels' is already the integer tensor
+                    running_corrects += torch.sum(preds == labels).item()
+
+                    # Store predicted integer class indices and ground truth integer labels
+                    all_preds.extend(preds.cpu().numpy())
+                    all_labels.extend(labels.cpu().numpy()) # These are the original integer labels from the batch
 
                 # update batch progress bar postfix to show batch loss and LR
-                batch_pbar.set_postfix(
-                    loss=f"{batch_loss:.4f}",
-                    lr=f"{current_lr:.1E}",
-                )
+                batch_pbar.set_postfix(loss=f"{batch_loss:.4f}",lr=f"{current_lr:.1E}",)
 
             # calculate epoch metrics
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
-            epoch_acc = running_corrects / len(dataloaders[phase].dataset)
             epoch_metrics[f"{phase}_loss"] = epoch_loss
-            epoch_metrics[f"{phase}_acc"] = epoch_acc
             results[f"{phase}_loss_history"].append(epoch_loss)
-            results[f"{phase}_acc_history"].append(epoch_acc)
 
-            # calculate Precision, Recall, F1 (macro average)
-            # zero_division=0 handles cases where a class might not be predicted in a batch/epoch
-            epoch_precision = precision_score(
-                all_labels, all_preds, average="macro", zero_division=0
-            )
-            epoch_recall = recall_score(
-                all_labels, all_preds, average="macro", zero_division=0
-            )
-            epoch_f1 = f1_score(all_labels, all_preds, average="macro", zero_division=0)
-            epoch_metrics[f"{phase}_precision"] = epoch_precision
-            epoch_metrics[f"{phase}_recall"] = epoch_recall
-            epoch_metrics[f"{phase}_f1"] = epoch_f1
+            # Calculate standard classification metrics only if we collected data for them
+            if calculate_standard_metrics:
+                 epoch_acc = running_corrects / len(dataloaders[phase].dataset)
+                 epoch_metrics[f"{phase}_acc"] = epoch_acc
+                 results[f"{phase}_acc_history"].append(epoch_acc)
+
+                 # calculate Precision, Recall, F1 (macro average)
+                 try:
+                    epoch_precision = precision_score(
+                        all_labels, all_preds, average="macro", zero_division=0
+                    )
+                    epoch_recall = recall_score(
+                        all_labels, all_preds, average="macro", zero_division=0
+                    )
+                    epoch_f1 = f1_score(all_labels, all_preds, average="macro", zero_division=0)
+                    epoch_metrics[f"{phase}_precision"] = epoch_precision
+                    epoch_metrics[f"{phase}_recall"] = epoch_recall
+                    epoch_metrics[f"{phase}_f1"] = epoch_f1
+                 except Exception as e:
+                     tqdm.write(f"⚠️ Error calculating metrics for {phase}: {e}")
+                     epoch_metrics[f"{phase}_precision"] = 0.0
+                     epoch_metrics[f"{phase}_recall"] = 0.0
+                     epoch_metrics[f"{phase}_f1"] = 0.0
+
+            else:
+                 # If standard metrics are not calculated (train with mixup), log placeholder values
+                 epoch_metrics[f"{phase}_acc"] = 0.0
+                 epoch_metrics[f"{phase}_precision"] = 0.0
+                 epoch_metrics[f"{phase}_recall"] = 0.0
+                 epoch_metrics[f"{phase}_f1"] = 0.0
+                 # Append placeholder to history to maintain list length consistency if needed, or handle separately
+                 results[f"{phase}_acc_history"].append(0.0)
 
             # validation phase specific actions
             if phase == "val":
-                val_acc_history.append(epoch_acc)  # keep track for early stopping check
+                val_acc_history.append(epoch_metrics["val_acc"]) # Use the calculated validation accuracy
 
                 # step the scheduler based on validation metric (if applicable)
                 if scheduler is not None:
                     if isinstance(scheduler, ReduceLROnPlateau):
-                        scheduler.step(epoch_acc)  # step based on validation accuracy
+                        scheduler.step(epoch_metrics["val_acc"]) # step based on validation accuracy
 
-                    else:
-                        scheduler.step()  # CosineAnnealingLR steps every epoch regardless of metrics
+                    else: # CosineAnnealingLR
+                        scheduler.step() # CosineAnnealingLR steps every epoch
 
-                # check for improvement & early stopping
-                if epoch_acc > best_acc:
-                    best_acc = epoch_acc
-                    best_loss = epoch_loss
+                # check for improvement & early stopping using validation accuracy
+                # Note: We always use validation accuracy for early stopping criteria
+                current_val_acc = epoch_metrics["val_acc"]
+                if current_val_acc > best_acc:
+                    best_acc = current_val_acc
+                    best_loss = epoch_metrics["val_loss"]
                     best_epoch = epoch
-                    best_f1 = epoch_f1
+                    best_f1 = epoch_metrics["val_f1"]
                     epochs_no_improve = 0  # reset counter
-                    best_val_preds = all_preds.copy()
-                    best_val_labels = all_labels.copy()
+                    # Store predictions and labels collected ONLY from the validation phase
+                    best_val_preds = all_preds.copy() # These are from validation, so they are correct integer labels
+                    best_val_labels = all_labels.copy() # These are from validation, so they are correct integer labels
                     tqdm.write(f"✅ Epoch {epoch}: Val Acc improved to {best_acc:.4f}.")
                 else:
                     epochs_no_improve += 1
                     tqdm.write(
-                        f"📉 Epoch {epoch}: Val Acc ({epoch_acc:.4f}) did not improve from best ({best_acc:.4f}). ({epochs_no_improve}/{patience})"
+                        f"📉 Epoch {epoch}: Val Acc ({current_val_acc:.4f}) did not improve from best ({best_acc:.4f}). ({epochs_no_improve}/{patience})"
                     )
 
         # log epoch metrics to WandB safely
@@ -796,10 +834,10 @@ def train_model(
 
         # update epoch progress bar postfix with key metrics
         epoch_pbar.set_postfix(
-            TrL=f"{epoch_metrics.get('train_loss', 0):.3f}",
-            TrA=f"{epoch_metrics.get('train_acc', 0):.3f}",
-            VL=f"{epoch_metrics.get('val_loss', 0):.3f}",
-            VA=f"{epoch_metrics.get('val_acc', 0):.3f}",
+            TrL=f"{epoch_metrics.get('train_loss', 0.0):.3f}",
+            TrA=f"{epoch_metrics.get('train_acc', 0.0):.3f}",
+            VL=f"{epoch_metrics.get('val_loss', 0.0):.3f}",
+            VA=f"{epoch_metrics.get('val_acc', 0.0):.3f}",
             BestVA=f"{best_acc:.3f}",
             LR=f"{current_lr:.1E}",
         )
@@ -807,16 +845,14 @@ def train_model(
         # print epoch summary to console
         tqdm.write(
             f"Epoch {epoch}/{num_epochs-1} -> "
-            f"Train[L:{epoch_metrics.get('train_loss', 0):.4f} A:{epoch_metrics.get('train_acc', 0):.4f} F1:{epoch_metrics.get('train_f1', 0):.4f}] | "
-            f"Val[L:{epoch_metrics.get('val_loss', 0):.4f} A:{epoch_metrics.get('val_acc', 0):.4f} F1:{epoch_metrics.get('val_f1', 0):.4f}] | "
+            f"Train[L:{epoch_metrics.get('train_loss', 0.0):.4f} A:{epoch_metrics.get('train_acc', 0.0):.4f} F1:{epoch_metrics.get('train_f1', 0.0):.4f}] | "
+            f"Val[L:{epoch_metrics.get('val_loss', 0.0):.4f} A:{epoch_metrics.get('val_acc', 0.0):.4f} F1:{epoch_metrics.get('val_f1', 0.0):.4f}] | "
             f"LR: {current_lr:.6f}"
         )
 
         # early stopping check
         if epochs_no_improve >= patience:
-            tqdm.write(
-                f"\n⏳ Early stopping triggered at epoch {epoch} after {patience} epochs with no improvement."
-            )
+            tqdm.write(f"\n⏳ Early stopping triggered at epoch {epoch} after {patience} epochs with no improvement.")
             break  # exit epoch loop
 
     end_time = time.time()
@@ -860,28 +896,40 @@ def train_model(
 
     else:
         print("⚠️ No improvement in validation accuracy was observed during training.")
-        results["best_val_acc"] = val_acc_history[0] if val_acc_history else 0.0
-        results["best_val_loss"] = (
-            results["val_loss_history"][0]
-            if results["val_loss_history"]
-            else float("inf")
-        )
-        results["best_val_f1"] = 0.0
+        # Log the metrics from the last epoch if no improvement
+        last_epoch_metrics = {}
+        if len(results["val_acc_history"]) > 0:
+             results["best_val_acc"] = results["val_acc_history"][-1]
+             results["best_val_loss"] = results["val_loss_history"][-1]
+             # F1, Precision, Recall from the last epoch if available, otherwise 0.0
+             # This assumes the last epoch's metrics are stored in epoch_metrics before the loop ends
+             # A safer way is to store epoch_metrics in a list per epoch
+             # For simplicity here, we might just log 0 or the last recorded non-zero if desired
+             results["best_val_f1"] = epoch_metrics.get("val_f1", 0.0) if 'val_f1' in epoch_metrics else 0.0
+
+
         results["best_epoch"] = best_epoch
+
 
     if wandb.run:
         try:
-            wandb.summary["best_val_acc"] = best_acc
-            wandb.summary["best_val_loss"] = best_loss
-            wandb.summary["best_val_f1"] = best_f1
-            wandb.summary["best_epoch"] = best_epoch
+            # Log best validation metrics to summary
+            wandb.summary["best_val_acc"] = results["best_val_acc"]
+            wandb.summary["best_val_loss"] = results["best_val_loss"]
+            wandb.summary["best_val_f1"] = results["best_val_f1"]
+            wandb.summary["best_epoch"] = results["best_epoch"]
             print("✅ Final best metrics logged to WandB summary.")
         except Exception as e:
             print(f"🚨 Failed to log final best metrics to WandB summary: {e}")
 
+    # You might want to return the model state dict of the best epoch,
+    # but your original code didn't, so we'll stick to that.
+    # If you wanted to return the best model, you'd need to save and load state_dict.
+
     results["val_acc_history"] = val_acc_history
 
-    return model, results
+    return model, results # Returns the model in its final state after all epochs (not necessarily the best)
+
 
 
 def train() -> None:
@@ -931,9 +979,13 @@ def train() -> None:
         patience=wandb.config["patience"],
         scheduler=wandb.config["scheduler"],
         cutmix_or_mixup=wandb.config.get("cutmix_or_mixup", False),
-        cutmix_alpha=wandb.config.get("cutmix_alpha", 1.0),
-        mixup_alpha=wandb.config.get("mixup_alpha", 0.2)
+        cutmix_alpha=float(wandb.config.get("cutmix_alpha")),
+        mixup_alpha=float(wandb.config.get("mixup_alpha"))
     )
+
+    if config["cutmix_or_mixup"]:
+        if not config["cutmix_alpha"] or not config["mixup_alpha"]:
+            raise ValueError("🚨 CutMix or MixUp is enabled but alpha values have not been specified")
 
     # model
     if not config["model"] or config["model"] not in SUPPORTED_MODELS:
@@ -1014,6 +1066,14 @@ def train() -> None:
             num_classes=num_classes,
         )
 
+    # cutmix/mixup
+    if config["cutmix_or_mixup"]:
+        cutmix = transforms.CutMix(num_classes=num_classes, alpha=config["cutmix_alpha"])
+        mixup = transforms.MixUp(num_classes=num_classes, alpha=config["mixup_alpha"])
+        cutmix_or_mixup = transforms.RandomChoice([cutmix, mixup])
+    else:
+        cutmix_or_mixup = None
+
     try:
         dataloaders_dict = load_data(
             dataset_name=config["dataset_name"],
@@ -1024,6 +1084,8 @@ def train() -> None:
             augment_level=config["augment_level"],
             dataset_mean=dataset_mean,
             dataset_std=dataset_std,
+            cutmix_or_mixup=cutmix_or_mixup,
+            num_classes=num_classes,
         )
     except Exception as e:
         if is_cuda_available():
@@ -1124,19 +1186,9 @@ def train() -> None:
             "dataset_mean": dataset_mean,
             "dataset_std": dataset_std,
             "optimizer": optimizer_name,
-            "cutmix_alpha": config["cutmix_alpha"],
-            "mixup_alpha": config["mixup_alpha"]
         },
         allow_val_change=True,
     )
-
-    # cutmix/mixup
-    if config["cutmix_or_mixup"]:
-        cutmix = transforms.CutMix(num_classes=num_classes, alpha=config["cutmix_alpha"])
-        mixup = transforms.MixUp(num_classes=num_classes, alpha=config["mixup_alpha"])
-        cutmix_or_mixup = transforms.RandomChoice([cutmix, mixup])
-    else:
-        cutmix_or_mixup = None
 
     print(f"🚀 Starting training loop for {config['model']}...")
     try:
@@ -1150,7 +1202,7 @@ def train() -> None:
             patience=config["patience"],
             use_mixed_precision=actual_use_mixed_precision,
             class_names=class_names,
-            cutmix_or_mixup=cutmix_or_mixup,
+            cutmix_or_mixup=True if cutmix_or_mixup else False,
         )
 
         # print results table
