@@ -1,6 +1,6 @@
 program: trainer_v8_wandb.py
 method: bayes
-project: vit-b-16-sweep-13cls-fft
+project: resnet50-sweep-13cls-fft
 metric:
   name: best_val_acc
   goal: maximize
@@ -26,7 +26,7 @@ parameters:
   batch_size:
     value: 32
   model:
-    value: "vit_b_16"
+    value: resnet50
   input_size:
     value: 224
   dataset_name:
@@ -34,7 +34,7 @@ parameters:
   training_mode:
     value: "fft"  # ["fft", "sft", "tl"]
   layers_to_unfreeze:
-    value: ["encoder.layers.encoder_layer_8.", "encoder.layers.encoder_layer_9.", "encoder.layers.encoder_layer_10.", "encoder.layers.encoder_layer_11."]
+    value: ["layer4."]
   calc_dataset_stats:
     value: False
   use_mixed_precision:
@@ -42,7 +42,7 @@ parameters:
   patience:
     value: 10
   scheduler:
-    value: "plateau"  # ["cosine", "plateau", "none"]
+    value: ["cosine", "plateau"]
   seed:
     value: 42
   cutmix_or_mixup:

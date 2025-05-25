@@ -1,0 +1,223 @@
+{
+  "cuda": {
+    "desc": null,
+    "value": true
+  },
+  "seed": {
+    "desc": null,
+    "value": 42
+  },
+  "model": {
+    "desc": null,
+    "value": "vit_b_16"
+  },
+  "_wandb": {
+    "desc": null,
+    "value": {
+      "t": {
+        "1": [1, 5, 41, 49, 51, 53, 55],
+        "2": [1, 5, 41, 49, 51, 53, 55],
+        "3": [2, 14, 23, 37, 62],
+        "4": "3.10.16",
+        "5": "0.19.6",
+        "8": [5],
+        "10": [19],
+        "13": "linux-x86_64"
+      },
+      "framework": "torch",
+      "visualize": {
+        "confusion_matrix_best_val_epoch": {
+          "panel_type": "Vega2",
+          "panel_config": {
+            "transform": {
+              "name": "tableWithLeafColNames"
+            },
+            "userQuery": {
+              "queryFields": [
+                {
+                  "args": [
+                    {
+                      "name": "runSets",
+                      "value": "${runSets}"
+                    }
+                  ],
+                  "name": "runSets",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "fields": []
+                    },
+                    {
+                      "name": "name",
+                      "fields": []
+                    },
+                    {
+                      "name": "_defaultColorIndex",
+                      "fields": []
+                    },
+                    {
+                      "args": [
+                        {
+                          "name": "tableKey",
+                          "value": "confusion_matrix_best_val_epoch_table"
+                        }
+                      ],
+                      "name": "summaryTable",
+                      "fields": []
+                    }
+                  ]
+                }
+              ]
+            },
+            "panelDefId": "wandb/confusion_matrix/v1",
+            "fieldSettings": {
+              "Actual": "Actual",
+              "Predicted": "Predicted",
+              "nPredictions": "nPredictions"
+            },
+            "stringSettings": {
+              "title": "Confusion Matrix Curve"
+            }
+          }
+        }
+      },
+      "start_time": 1748117055,
+      "cli_version": "0.19.6",
+      "is_jupyter_run": false,
+      "python_version": "3.10.16",
+      "is_kaggle_kernel": false
+    }
+  },
+  "epochs": {
+    "desc": null,
+    "value": 50
+  },
+  "patience": {
+    "desc": null,
+    "value": 15
+  },
+  "dropout_p": {
+    "desc": null,
+    "value": 0.4
+  },
+  "optimizer": {
+    "desc": null,
+    "value": "AdamW"
+  },
+  "scheduler": {
+    "desc": null,
+    "value": "cosine"
+  },
+  "batch_size": {
+    "desc": null,
+    "value": 32
+  },
+  "input_size": {
+    "desc": null,
+    "value": 224
+  },
+  "dataset_std": {
+    "desc": null,
+    "value": null
+  },
+  "mixup_alpha": {
+    "desc": null,
+    "value": 0.2
+  },
+  "num_classes": {
+    "desc": null,
+    "value": 13
+  },
+  "cutmix_alpha": {
+    "desc": null,
+    "value": 1
+  },
+  "dataset_mean": {
+    "desc": null,
+    "value": null
+  },
+  "dataset_name": {
+    "desc": null,
+    "value": "dushj98/aerial_real_plus_0125"
+  },
+  "weight_decay": {
+    "desc": null,
+    "value": 0.06
+  },
+  "augment_level": {
+    "desc": null,
+    "value": "none"
+  },
+  "learning_rate": {
+    "desc": null,
+    "value": 0.0001
+  },
+  "training_mode": {
+    "desc": null,
+    "value": "sft"
+  },
+  "cutmix_or_mixup": {
+    "desc": null,
+    "value": true
+  },
+  "label_smoothing": {
+    "desc": null,
+    "value": 0.2
+  },
+  "calc_dataset_stats": {
+    "desc": null,
+    "value": false
+  },
+  "layers_to_unfreeze": {
+    "desc": null,
+    "value": [
+      "encoder.layers.encoder_layer_8.",
+      "encoder.layers.encoder_layer_9.",
+      "encoder.layers.encoder_layer_10.",
+      "encoder.layers.encoder_layer_11."
+    ]
+  },
+  "use_mixed_precision": {
+    "desc": null,
+    "value": true
+  },
+  "actual_use_mixed_precision": {
+    "desc": null,
+    "value": true
+  },
+  "data_normalization_strategy": {
+    "desc": null,
+    "value": "ImageNet"
+  },
+  "_runtime": 3165.5050530433655,
+  "_step": 18,
+  "_timestamp": 1748120221.265741,
+  "_wandb.runtime": 3164,
+  "acc/train": 0,
+  "acc/val": 0.4896361123906034,
+  "best_epoch": 2,
+  "best_val_acc": 0.504836480884385,
+  "best_val_f1": 0.4967685469835464,
+  "best_val_loss": 1.8898917873682155,
+  "confusion_matrix_best_val_epoch_table": {
+    "_latest_artifact_path": "wandb-client-artifact://sd0y5y7ad1ctr7yx47ohkpjtupkhj3a3o8uqvtwwsv9r7wp4fl7si6dng9vlosx395m9osn252w3dv1gkmjmodl8b78xbhqevgujlnn362jayuywzc1ssu7a6ke5ov51:latest/confusion_matrix_best_val_epoch_table.table.json",
+    "_type": "table-file",
+    "artifact_path": "wandb-client-artifact://2mz2fmeky3sbafhqb6rvdhexu682leyxblpfmwonab0csvhfbo2zdrmewew8konjvxan2csevmf9zjp07q4wnba86lbvvp04dgifey0rhb9hz1c4rrzyeb3a6jobns7z/confusion_matrix_best_val_epoch_table.table.json",
+    "ncols": 3,
+    "nrows": 169,
+    "path": "media/table/confusion_matrix_best_val_epoch_table_18_545da5c44fec6a38d825.table.json",
+    "sha256": "545da5c44fec6a38d82564abb710803f492556987ffdcbea5a3375a3f04397f7",
+    "size": 8880
+  },
+  "epoch": 17,
+  "epochs_since_improvement": 15,
+  "f1/train": 0,
+  "f1/val": 0.47245606512124466,
+  "final_learning_rate": 0.00007434680686803489,
+  "loss/train": 1.346125247702041,
+  "loss/val": 2.106561634519692,
+  "precision/train": 0,
+  "precision/val": 0.47390195337358126,
+  "recall/train": 0,
+  "recall/val": 0.4896361123906034
+}

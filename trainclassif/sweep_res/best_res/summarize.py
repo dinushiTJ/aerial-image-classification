@@ -8,33 +8,34 @@ from tabulate import tabulate
 
 def extract_training_metadata_from_json_folder(folder_path: str) -> pd.DataFrame:
     fields_to_extract = [
-        "actual_use_mixed_precision",
-        "augment_level",
-        "batch_size",
-        "data_normalization_strategy",
+        "training_mode",
+        "best_val_acc",
         "dropout_p",
-        "epochs",
-        "label_smoothing",
         "learning_rate",
+        "label_smoothing",
+        "weight_decay",
+        "augment_level",
+        "scheduler",
+        "batch_size",
+        "cutmix_or_mixup",
+        "cutmix_alpha",
+        "mixup_alpha",
+        "best_epoch",
+        "actual_use_mixed_precision",
+        "data_normalization_strategy",
+        "epochs",
         "num_classes",
         "model",
         "optimizer",
         "patience",
-        "scheduler",
-        "training_mode",
         "acc/train",
         "acc/val",
-        "best_epoch",
-        "best_val_acc",
         "train_acc_at_best_epoch",
-        "best_epoch",
-        "weight_decay",
-
     ]
 
     metadata_by_field = {field: {} for field in fields_to_extract}
 
-    for filename in os.listdir(folder_path):
+    for filename in sorted(os.listdir(folder_path)):
         if filename.endswith(".json"):
             column_name = filename.replace(".json", "").split("_")[-1]
 

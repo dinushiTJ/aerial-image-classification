@@ -1,0 +1,47 @@
+program: trainer_v8_wandb.py
+method: bayes
+project: vit-b-16-sweep-13cls-150-tl
+metric:
+  name: best_val_acc
+  goal: maximize
+parameters:
+  augment_level:
+    value: none
+  learning_rate:
+    value: 5e-04
+  dropout_p:
+    value: 0.2
+  weight_decay:
+    value: 0.13
+  label_smoothing:
+    value: 0.0
+  epochs:
+    value: 50
+  batch_size:
+    value: 32
+  model:
+    value: vit_b_16
+  input_size:
+    value: 224
+  dataset_name:
+    value: dushj98/aerial_real_plus_0150  # "dushj98/aerial_real_only", aerial_real_plus_0010
+  calc_dataset_stats:
+    value: False
+  use_mixed_precision:
+    value: True
+  patience:
+    values: [10, 15]  # dummy values so wandb agent doesn't terminate
+  scheduler:
+    value: cosine
+  cutmix_or_mixup:
+    value: True
+  cutmix_alpha:
+    value: 1.0
+  mixup_alpha:
+    value: 0.2
+  training_mode:
+    value: tl
+  layers_to_unfreeze:
+    value: ["encoder.layers.encoder_layer_8.", "encoder.layers.encoder_layer_9.", "encoder.layers.encoder_layer_10.", "encoder.layers.encoder_layer_11."]
+  seed:
+    value: 42

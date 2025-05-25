@@ -1,0 +1,1 @@
+wandb agent dushj98-uow/efficientnetv2-m-sweep-7cls-sft/wodw7o9g
