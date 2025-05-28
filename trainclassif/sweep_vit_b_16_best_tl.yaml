@@ -1,6 +1,6 @@
 program: trainer_v8_wandb.py
 method: bayes
-project: vit-b-16-sweep-13cls-150-tl
+project: vit-b-16-sweep-13cls-real-tl
 metric:
   name: best_val_acc
   goal: maximize
@@ -24,7 +24,7 @@ parameters:
   input_size:
     value: 224
   dataset_name:
-    value: dushj98/aerial_real_plus_0150  # "dushj98/aerial_real_only", aerial_real_plus_0010
+    value: dushj98/aerial_real_only  # "dushj98/aerial_real_only", aerial_real_plus_0010
   calc_dataset_stats:
     value: False
   use_mixed_precision:
