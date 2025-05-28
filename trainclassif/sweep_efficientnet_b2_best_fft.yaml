@@ -1,0 +1,47 @@
+program: trainer_v8_wandb.py
+method: bayes
+project: efficientnet_b2-sweep-13cls-real-fft
+metric:
+  name: best_val_acc
+  goal: maximize
+parameters:
+  learning_rate:
+    value: 1e-05
+  augment_level:
+    value: none
+  dropout_p:
+    value: 0.3
+  weight_decay:
+    value: 0.03
+  label_smoothing:
+    value: 0.2
+  epochs:
+    value: 50
+  batch_size:
+    value: 32
+  model:
+    value: efficientnet_b2
+  input_size:
+    value: 224
+  dataset_name:
+    value: dushj98/aerial_real_only  # "dushj98/aerial_real_only"
+  calc_dataset_stats:
+    value: False
+  use_mixed_precision:
+    value: True
+  patience:
+    values: [10, 15]
+  scheduler:
+    value: plateau
+  cutmix_or_mixup:
+    value: True
+  cutmix_alpha:
+    value: 1.0
+  mixup_alpha:
+    value: 0.2
+  training_mode:
+    value: fft
+  layers_to_unfreeze:
+    value: ["features.6.", "features.7.", "features.8."]
+  seed:
+    value: 42

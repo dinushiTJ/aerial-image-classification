@@ -1,0 +1,47 @@
+program: trainer_v8_wandb.py
+method: bayes
+project: resnet50-sweep-13cls-50-fft
+metric:
+  name: best_val_acc
+  goal: maximize
+parameters:
+  augment_level:
+    value: none
+  learning_rate:
+    value: 7e-06
+  dropout_p:
+    value: 0.4
+  weight_decay:
+    value: 0.04
+  label_smoothing:
+    value: 0.0
+  epochs:
+    value: 50
+  batch_size:
+    value: 32
+  model:
+    value: resnet50
+  input_size:
+    value: 224
+  dataset_name:
+    value: dushj98/aerial_real_plus_0050  # "dushj98/aerial_real_only", aerial_real_plus_0010
+  calc_dataset_stats:
+    value: False
+  use_mixed_precision:
+    value: True
+  patience:
+    values: [10, 15]
+  scheduler:
+    value: plateau
+  cutmix_or_mixup:
+    value: True
+  cutmix_alpha:
+    value: 1.0
+  mixup_alpha:
+    value: 0.2
+  training_mode:
+    value: fft
+  layers_to_unfreeze:
+    value: ["layer4."]
+  seed:
+    value: 42
