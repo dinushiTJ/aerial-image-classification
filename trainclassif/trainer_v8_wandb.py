@@ -1232,11 +1232,11 @@ def train() -> None:
         table_str += "\n" + tabulate(table_data, headers=headers, tablefmt="github")
         print("\n" + table_str)
 
-        # save to file
-        date_str = datetime.now().strftime("%Y_%m_%d")
-        output_file = f"{date_str}_res_{wandb.run.name}_{config['training_mode']}.md"
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write(table_str)
+        # # save to file
+        # date_str = datetime.now().strftime("%Y_%m_%d")
+        # output_file = f"{date_str}_res_{wandb.run.name}_{config['training_mode']}.md"
+        # with open(output_file, "w", encoding="utf-8") as f:
+        #     f.write(table_str)
 
         print("\n✨ Trainer finished. ✨\n")
 

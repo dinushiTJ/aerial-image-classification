@@ -42,7 +42,7 @@ parameters:
   patience:
     value: 10
   scheduler:
-    value: ["cosine", "plateau"]
+    values: ["cosine", "plateau"]
   seed:
     value: 42
   cutmix_or_mixup:
