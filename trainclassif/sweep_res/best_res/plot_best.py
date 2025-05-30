@@ -35,9 +35,9 @@ def plot_data(data, model_run_name):
     suffixes = ['real', 'p10', 'p25', 'p50', 'p75', 'p100', 'p125', 'p150']
     training_modes = ['tl', 'sft', 'fft']
     
-    # Create figure with modern styling
+    # Create figure with modern styling - increased figure size for better title space
     plt.style.use('default')
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 9))  # Increased height from 8 to 9
     fig.patch.set_facecolor('#FAFAFA')  # Light material background
     ax.set_facecolor('#FFFFFF')        # Pure white plot area
     
@@ -85,11 +85,16 @@ def plot_data(data, model_run_name):
                   labelpad=12,
                   fontproperties=font_prop)
     
-    ax.set_title('Impact of Synthetic Data Proportion on Model Performance',
-                 fontsize=16,
-                 fontweight='500', 
+    # Split title into two lines for better readability
+    title_line1 = 'Impact of Synthetic Data Proportion'
+    title_line2 = f'on Model Performance ({model_run_name})'
+    
+    # Use suptitle for better control over positioning and sizing
+    fig.suptitle(f'{title_line1}\n{title_line2}',
+                 fontsize=17,  # Slightly larger
+                 fontweight='600',  # Bolder
                  color='#212121',
-                 pad=20,
+                 y=0.95,  # Position from bottom of figure
                  fontproperties=font_prop)
     
     # Legend styling
@@ -139,7 +144,8 @@ def plot_data(data, model_run_name):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     
-    plt.tight_layout(pad=2.0)
+    # Adjust layout with more top padding for the title
+    plt.tight_layout(rect=[0, 0, 1, 0.92])  # Leave 8% space at top for title
     plt.show()
     click.echo("Plotting completed.")
 
