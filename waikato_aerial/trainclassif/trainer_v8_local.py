@@ -36,7 +36,7 @@ from torchvision import models
 from torchvision.transforms import v2 as transforms
 from tqdm.auto import tqdm
 
-load_dotenv("../.env")
+load_dotenv("/home/dj191/research/code/waikato_aerial/.env")
 
 HF_TOKEN_ENV_VAR = "HF_TOKEN"
 HF_USER_ENV_VAR = "HF_USER"
@@ -53,7 +53,7 @@ TRAINING_MODE_MAP = {
     "sft": "Selective Fine-Tuning",
     "fft": "Full Fine-Tuning",
 }
-DEFAULT_SEED = 42
+DEFAULT_SEEDS = [1417352920, 319080682, 3892354109, 34793895]  # 42 (already done)
 DEFAULT_BATCH_SIZE = 32
 CALC_DATASET_STATS = False
 DEFAULT_INPUT_SIZE = 224
@@ -174,7 +174,7 @@ ModelArchitecture = Literal[
 SchedulerType = Literal["none", "cosine", "plateau"]
 
 
-def set_reproducibility(seed: int = DEFAULT_SEED) -> callable:
+def set_reproducibility(seed: int) -> callable:
     """
     Sets random seeds and CUDA flags for reproducibility.
 
@@ -1044,308 +1044,300 @@ def train() -> None:
 
 
     # loop over datasets
-    for dataset_name in DATASETS:        
-        # set seed
-        print(f"🌱 Setting random seed: {DEFAULT_SEED}")
-        seed_worker = set_reproducibility(DEFAULT_SEED)
-        g = torch.Generator()
-        g.manual_seed(DEFAULT_SEED)
+    for dataset_name in DATASETS:
+        for seed in DEFAULT_SEEDS:
+            # set seed
+            print(f"🌱 Setting random seed: {seed}")
+            seed_worker = set_reproducibility(seed)
+            g = torch.Generator()
+            g.manual_seed(seed)
 
-        # dataset info
-        try:
-            ds_infos = get_dataset_infos(dataset_name)
-            ds_info = next(iter(ds_infos.values()))
-            features = ds_info.features
-            if "label" not in features or not hasattr(features["label"], "num_classes"):
-                raise ValueError("Dataset feature 'label' not found.")
+            # dataset info
+            try:
+                ds_infos = get_dataset_infos(dataset_name)
+                ds_info = next(iter(ds_infos.values()))
+                features = ds_info.features
+                if "label" not in features or not hasattr(features["label"], "num_classes"):
+                    raise ValueError("Dataset feature 'label' not found.")
 
-            num_classes = features["label"].num_classes
-            class_names = features["label"].names
-            id2label = {i: name for i, name in enumerate(class_names)}
-            label2id = {name: i for i, name in enumerate(class_names)}
-            print(f"Number of classes: {num_classes}\nClass names: {class_names}")
+                num_classes = features["label"].num_classes
+                class_names = features["label"].names
+                id2label = {i: name for i, name in enumerate(class_names)}
+                label2id = {name: i for i, name in enumerate(class_names)}
+                print(f"Number of classes: {num_classes}\nClass names: {class_names}")
 
-        except Exception as e:
-            raise Exception(
-                f"🚨 Failed to load dataset info or infer classes for '{dataset_name}'. "
-                f"Please ensure the dataset exists and has a 'label' feature of type ClassLabel."
-            ) from e
+            except Exception as e:
+                raise Exception(
+                    f"🚨 Failed to load dataset info or infer classes for '{dataset_name}'. "
+                    f"Please ensure the dataset exists and has a 'label' feature of type ClassLabel."
+                ) from e
 
-        # dataset stats
-        dataset_mean, dataset_std = None, None
-        if CALC_DATASET_STATS:
-            dataset_mean, dataset_std = get_dataset_stats(
-                seed=DEFAULT_SEED,
-                dataset_name=dataset_name,
-                split="train",
-                n_samples_per_class=100,
-                input_size=DEFAULT_INPUT_SIZE,
-                num_classes=num_classes,
-            )
+            # dataset stats
+            dataset_mean, dataset_std = None, None
+            if CALC_DATASET_STATS:
+                dataset_mean, dataset_std = get_dataset_stats(
+                    seed=seed,
+                    dataset_name=dataset_name,
+                    split="train",
+                    n_samples_per_class=100,
+                    input_size=DEFAULT_INPUT_SIZE,
+                    num_classes=num_classes,
+                )
 
-        # cutmix/mixup
-        if CUTMIX_OR_MIXUP:
-            cutmix = transforms.CutMix(num_classes=num_classes, alpha=CUTMIX_ALPHA)
-            mixup = transforms.MixUp(num_classes=num_classes, alpha=MIXUP_ALPHA)
-            cutmix_or_mixup = transforms.RandomChoice([cutmix, mixup])
-        else:
-            cutmix_or_mixup = None
-        
-        try:
-            dataloaders_dict = load_data(
-                dataset_name=dataset_name,
-                input_size=DEFAULT_INPUT_SIZE,
-                batch_size=DEFAULT_BATCH_SIZE,
-                seed_worker=seed_worker,
-                g=g,
-                augment_level=AUGMENT_LEVEL,
-                dataset_mean=dataset_mean,
-                dataset_std=dataset_std,
-                cutmix_or_mixup=cutmix_or_mixup,
-                num_classes=num_classes,
-            )
-        except Exception as e:
-            if is_cuda_available():
-                torch.cuda.empty_cache()
-            raise Exception(f"🚨 Failed to load data.") from e
-        
-        # loop over models
-        for model_name in PRE_DEFINED_MODEL_CONFIGS.keys():
-            # skipping already trained models
-            if model_name == "vit_b_16":
-                print("Skipping 'vit_b_16' model as it is already trained.")
-                continue
+            # cutmix/mixup
+            if CUTMIX_OR_MIXUP:
+                cutmix = transforms.CutMix(num_classes=num_classes, alpha=CUTMIX_ALPHA)
+                mixup = transforms.MixUp(num_classes=num_classes, alpha=MIXUP_ALPHA)
+                cutmix_or_mixup = transforms.RandomChoice([cutmix, mixup])
+            else:
+                cutmix_or_mixup = None
+            
+            try:
+                dataloaders_dict = load_data(
+                    dataset_name=dataset_name,
+                    input_size=DEFAULT_INPUT_SIZE,
+                    batch_size=DEFAULT_BATCH_SIZE,
+                    seed_worker=seed_worker,
+                    g=g,
+                    augment_level=AUGMENT_LEVEL,
+                    dataset_mean=dataset_mean,
+                    dataset_std=dataset_std,
+                    cutmix_or_mixup=cutmix_or_mixup,
+                    num_classes=num_classes,
+                )
+            except Exception as e:
+                if is_cuda_available():
+                    torch.cuda.empty_cache()
+                raise Exception(f"🚨 Failed to load data.") from e
+            
+            # loop over models
+            for model_name in PRE_DEFINED_MODEL_CONFIGS.keys():
+                # loop over training modes
+                for training_mode in TRAINING_MODE_MAP.keys():
+                    training_configs = deepcopy(PRE_DEFINED_MODEL_CONFIGS[model_name][training_mode])
 
-            if model_name == "resnet50" and dataset_name in ["dushj98/aerial_real_plus_0010", "dushj98/aerial_real_plus_0025"]:
-                print(f"Skipping {dataset_name} for {model_name} as it is already trained.")
-                continue
+                    # validate configs
+                    if training_mode == "tl":
+                        print(f"Training mode = TL. Only the head will be trainable.")
 
-            # loop over training modes
-            for training_mode in TRAINING_MODE_MAP.keys():
-                training_configs = deepcopy(PRE_DEFINED_MODEL_CONFIGS[model_name][training_mode])
+                        if training_configs["layers_to_unfreeze"]:
+                            training_configs["layers_to_unfreeze"] = []
+                            print("⚠️ layers_to_unfreeze will be ignored.")
 
-                # validate configs
-                if training_mode == "tl":
-                    print(f"Training mode = TL. Only the head will be trainable.")
+                        if training_configs["dropout_p"] > 0:
+                            print(f"⚠️ dropout_p ({training_configs['dropout_p']}) specified with TL.")
 
-                    if training_configs["layers_to_unfreeze"]:
-                        training_configs["layers_to_unfreeze"] = []
-                        print("⚠️ layers_to_unfreeze will be ignored.")
+                    elif training_mode == "sft":
+                        print("Training mode = SFT. Only specified layers + head will be trainable.")
 
-                    if training_configs["dropout_p"] > 0:
-                        print(f"⚠️ dropout_p ({training_configs['dropout_p']}) specified with TL.")
+                        if not training_configs["layers_to_unfreeze"]:
+                            raise ValueError("⚠️ layers_to_unfreeze not specified.")
 
-                elif training_mode == "sft":
-                    print("Training mode = SFT. Only specified layers + head will be trainable.")
+                    else:  # "fft"
+                        print("Training mode = FFT. All layers will be trainable.")
 
-                    if not training_configs["layers_to_unfreeze"]:
-                        raise ValueError("⚠️ layers_to_unfreeze not specified.")
+                        if training_configs["layers_to_unfreeze"]:
+                            training_configs["layers_to_unfreeze"] = []
+                            print("⚠️ layers_to_unfreeze will be ignored.")
 
-                else:  # "fft"
-                    print("Training mode = FFT. All layers will be trainable.")
+                    # dropout_p
+                    if training_configs["dropout_p"] < 0 or training_configs["dropout_p"] > 1:
+                        raise ValueError("🚨 Dropout value must be a valid percentage.")
 
-                    if training_configs["layers_to_unfreeze"]:
-                        training_configs["layers_to_unfreeze"] = []
-                        print("⚠️ layers_to_unfreeze will be ignored.")
+                    # mixed precision
+                    amp_available = is_cuda_available()
+                    actual_use_mixed_precision = USE_MIXED_PRECISION and amp_available
+                    if USE_MIXED_PRECISION and not amp_available:
+                        print("⚠️ Mixed precision requested but CUDA is not available.")
+                    
+                    # initialize model
+                    try:
+                        model = initialize_model(
+                            model_name=model_name,
+                            num_classes=num_classes,
+                            requires_grad=(training_mode == "fft"),
+                            layers_to_unfreeze=training_configs["layers_to_unfreeze"],
+                            dropout_p=training_configs["dropout_p"],
+                        )
+                    except Exception as e:
+                        raise Exception(f"🚨 Failed to initialize {model_name}.") from e
+                    
+                    # loss function
+                    criterion = CrossEntropyLoss(label_smoothing=training_configs["label_smoothing"])
+                    print("Loss Func: CrossEntropyLoss")
+                    print(f"Label Smoothing: {training_configs['label_smoothing']}")
 
-                # dropout_p
-                if training_configs["dropout_p"] < 0 or training_configs["dropout_p"] > 1:
-                    raise ValueError("🚨 Dropout value must be a valid percentage.")
-
-                # mixed precision
-                amp_available = is_cuda_available()
-                actual_use_mixed_precision = USE_MIXED_PRECISION and amp_available
-                if USE_MIXED_PRECISION and not amp_available:
-                    print("⚠️ Mixed precision requested but CUDA is not available.")
-                
-                # initialize model
-                try:
-                    model = initialize_model(
-                        model_name=model_name,
-                        num_classes=num_classes,
-                        requires_grad=(training_mode == "fft"),
-                        layers_to_unfreeze=training_configs["layers_to_unfreeze"],
-                        dropout_p=training_configs["dropout_p"],
-                    )
-                except Exception as e:
-                    raise Exception(f"🚨 Failed to initialize {model_name}.") from e
-                
-                # loss function
-                criterion = CrossEntropyLoss(label_smoothing=training_configs["label_smoothing"])
-                print("Loss Func: CrossEntropyLoss")
-                print(f"Label Smoothing: {training_configs['label_smoothing']}")
-
-                # optimizer
-                optimizer: Optimizer
-                optimizer_name = ""
-                if training_mode == "tl":  # Use Adam for head-only training (simpler, often effective)
-                    optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=training_configs["learning_rate"])
-                    optimizer_name = "Adam"
-                    print(f"Optimizer: {optimizer_name} (LR={training_configs['learning_rate']:.1E})")
-                else:
-                    # Use AdamW with weight decay for fine-tuning modes (fft, sft)
-                    # Apply weight decay only to weights (ndim >= 2), not biases or norms (ndim < 2)
-                    decay_params = [p for p in model.parameters() if p.requires_grad and p.ndim >= 2]
-                    no_decay_params = [p for p in model.parameters() if p.requires_grad and p.ndim < 2]
-                    optimizer = AdamW(
-                        [
-                            {
-                                "params": decay_params,
-                                "weight_decay": training_configs["weight_decay"],
-                            },  # Standard WD for weights
-                            {
-                                "params": no_decay_params,
-                                "weight_decay": 0.0,
-                            },  # No WD for biases/norms
-                        ],
-                        lr=training_configs["learning_rate"],
-                        betas=(0.9, 0.999),
-                        eps=1e-8,
-                    )
-                    optimizer_name = "AdamW"
-                    print(f"Optimizer: {optimizer_name} (LR={training_configs['learning_rate']:.1E}")
-                    print(f"Weight decay = {training_configs['weight_decay']} on weights)")
-                
-                # lr scheduler
-                lr_scheduler: LRScheduler | None = None
-                if training_configs["scheduler"] == "cosine":
-                    lr_scheduler = CosineAnnealingLR(
-                        optimizer, T_max=DEFAULT_EPOCHS, eta_min=training_configs["learning_rate"] / 100
-                    )  # Decay to 1/100th
-                    print("Scheduler: CosineAnnealingLR")
-                    print(f"T_max={DEFAULT_EPOCHS}")
-                    print(f"eta_min={training_configs['learning_rate'] / 100:.1E})")
-
-                elif training_configs["scheduler"] == "plateau":
-                    # plateau scheduler steps based on accuracy
-                    # used half of early stopping patience
-                    plateau_patience = max(1, DEFAULT_PATIENCE // 2)
-                    lr_scheduler = ReduceLROnPlateau(
-                        optimizer,
-                        mode="max",
-                        factor=0.2,
-                        patience=plateau_patience,
-                        verbose=True,
-                    )
-                    print("Scheduler: ReduceLROnPlateau")
-                    print(f"mode=max, factor=0.2, patience={plateau_patience})")
-
-                else:  # 'none'
-                    print("Scheduler: None")
-
-                # update training configs
-                training_configs["model"] = model_name
-                training_configs["training_mode"] = training_mode
-                training_configs["dataset_name"] = dataset_name
-                training_configs["num_classes"] = num_classes
-                training_configs["augment_level"] = AUGMENT_LEVEL
-                training_configs["cutmix_or_mixup"] = CUTMIX_OR_MIXUP
-                training_configs["cutmix_alpha"] = CUTMIX_ALPHA
-                training_configs["mixup_alpha"] = MIXUP_ALPHA
-                training_configs["calc_dataset_stats"] = CALC_DATASET_STATS
-                training_configs["dataset_mean"] = dataset_mean
-                training_configs["dataset_std"] = dataset_std
-                training_configs["seed"] = DEFAULT_SEED
-                training_configs["use_mixed_precision"] = USE_MIXED_PRECISION
-                training_configs["patience"] = DEFAULT_PATIENCE
-                training_configs["input_size"] = DEFAULT_INPUT_SIZE
-                training_configs["batch_size"] = DEFAULT_BATCH_SIZE
-                training_configs["epochs"] = DEFAULT_EPOCHS
-                training_configs["cuda"] = is_cuda_available()
-                training_configs["actual_use_mixed_precision"] = actual_use_mixed_precision
-                training_configs["optimizer"] = optimizer_name
-                training_configs["data_normalization_strategy"] = "dataset" if dataset_mean and dataset_std else "ImageNet"
-
-                # init wandb run
-                dataset_suffix = DATASET_SUFFIX_MAP[dataset_name]
-                wandb_project_name = f"{model_name}-{num_classes}cls-{dataset_suffix}-{training_mode}"
-
-                try:
-                    if wandb.run is not None:
-                        print(f"Finishing previous incomplete WandB run {wandb.run.name}...")
-                        wandb.finish(exit_code=1, quiet=True)
-
-                    wandb_run = wandb.init(
-                        project=wandb_project_name,
-                        config=training_configs,
-                        reinit=True,
-                        tags=[
-                            model_name,
-                            training_mode,
-                            dataset_name.split("/")[-1],
-                            f"seed_{DEFAULT_SEED}",
-                        ],
-                    )
-                    print(f"👟 WandB Run Initialized: {wandb_run.get_url()}")
-                    print("Run Config:", json.dumps(training_mode, indent=2, default=str))
-
-                except Exception as e:
-                    raise Exception(f"🚨 Failed to initialize W&B run for {model_name}.") from e
-
-                print(f"🚀 Starting training loop for {model_name}...")
-                try:
-                    best_model, model_results = train_model(
-                        model=model,
-                        dataloaders=dataloaders_dict,
-                        criterion=criterion,
-                        optimizer=optimizer,
-                        scheduler=lr_scheduler,
-                        num_epochs=DEFAULT_EPOCHS,
-                        patience=DEFAULT_PATIENCE,
-                        use_mixed_precision=actual_use_mixed_precision,
-                        class_names=class_names,
-                        cutmix_or_mixup=True if cutmix_or_mixup else False,
-                    )
-
-                    # print results table
-                    table_str = "\n🏁 Training Summary\n"
-                    table_str += "-" * 20
-                    table_str += f"\n"
-                    table_str += (
-                        f"```json\n{json.dumps(wandb.run.config, indent=2, default=str)}\n\n"
-                    )
-
-                    table_data = []
-
-                    if model_results:
-                        acc = model_results.get("best_val_acc", 0.0) * 100
-                        epoch = model_results.get("best_epoch", -1)
-                        time_mins = model_results.get("train_time", 0.0) / 60
-                        status = "✅ Success" if epoch != -1 else "⚠️ No Improve"
-                        table_data.append([model_name, f"{acc:.2f}%", epoch, f"{time_mins:.1f}", status])
-
+                    # optimizer
+                    optimizer: Optimizer
+                    optimizer_name = ""
+                    if training_mode == "tl":  # Use Adam for head-only training (simpler, often effective)
+                        optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=training_configs["learning_rate"])
+                        optimizer_name = "Adam"
+                        print(f"Optimizer: {optimizer_name} (LR={training_configs['learning_rate']:.1E})")
                     else:
-                        table_data.append([model_name, "N/A", "N/A", "N/A", "❓ Unknown"])
+                        # Use AdamW with weight decay for fine-tuning modes (fft, sft)
+                        # Apply weight decay only to weights (ndim >= 2), not biases or norms (ndim < 2)
+                        decay_params = [p for p in model.parameters() if p.requires_grad and p.ndim >= 2]
+                        no_decay_params = [p for p in model.parameters() if p.requires_grad and p.ndim < 2]
+                        optimizer = AdamW(
+                            [
+                                {
+                                    "params": decay_params,
+                                    "weight_decay": training_configs["weight_decay"],
+                                },  # Standard WD for weights
+                                {
+                                    "params": no_decay_params,
+                                    "weight_decay": 0.0,
+                                },  # No WD for biases/norms
+                            ],
+                            lr=training_configs["learning_rate"],
+                            betas=(0.9, 0.999),
+                            eps=1e-8,
+                        )
+                        optimizer_name = "AdamW"
+                        print(f"Optimizer: {optimizer_name} (LR={training_configs['learning_rate']:.1E}")
+                        print(f"Weight decay = {training_configs['weight_decay']} on weights)")
+                    
+                    # lr scheduler
+                    lr_scheduler: LRScheduler | None = None
+                    if training_configs["scheduler"] == "cosine":
+                        lr_scheduler = CosineAnnealingLR(
+                            optimizer, T_max=DEFAULT_EPOCHS, eta_min=training_configs["learning_rate"] / 100
+                        )  # Decay to 1/100th
+                        print("Scheduler: CosineAnnealingLR")
+                        print(f"T_max={DEFAULT_EPOCHS}")
+                        print(f"eta_min={training_configs['learning_rate'] / 100:.1E})")
 
-                    # table headers
-                    headers = ["Model", "Best Val Acc", "Best Epoch", "Train Time (m)", "Status"]
-                    table_str += "\n" + tabulate(table_data, headers=headers, tablefmt="github")
-                    print("\n" + table_str)
+                    elif training_configs["scheduler"] == "plateau":
+                        # plateau scheduler steps based on accuracy
+                        # used half of early stopping patience
+                        plateau_patience = max(1, DEFAULT_PATIENCE // 2)
+                        lr_scheduler = ReduceLROnPlateau(
+                            optimizer,
+                            mode="max",
+                            factor=0.2,
+                            patience=plateau_patience,
+                            verbose=True,
+                        )
+                        print("Scheduler: ReduceLROnPlateau")
+                        print(f"mode=max, factor=0.2, patience={plateau_patience})")
 
-                    # # save to file
-                    # date_str = datetime.now().strftime("%Y_%m_%d")
-                    # output_file = f"{date_str}_res_{wandb.run.name}_{config['training_mode']}.md"
-                    # with open(output_file, "w", encoding="utf-8") as f:
-                    #     f.write(table_str)
+                    else:  # 'none'
+                        print("Scheduler: None")
 
-                    print(f"\n✨ Trainer finished for {model_name} ({dataset_suffix}). ✨\n")
+                    # update training configs
+                    training_configs["model"] = model_name
+                    training_configs["training_mode"] = training_mode
+                    training_configs["dataset_name"] = dataset_name
+                    training_configs["num_classes"] = num_classes
+                    training_configs["augment_level"] = AUGMENT_LEVEL
+                    training_configs["cutmix_or_mixup"] = CUTMIX_OR_MIXUP
+                    training_configs["cutmix_alpha"] = CUTMIX_ALPHA
+                    training_configs["mixup_alpha"] = MIXUP_ALPHA
+                    training_configs["calc_dataset_stats"] = CALC_DATASET_STATS
+                    training_configs["dataset_mean"] = dataset_mean
+                    training_configs["dataset_std"] = dataset_std
+                    training_configs["seed"] = seed
+                    training_configs["use_mixed_precision"] = USE_MIXED_PRECISION
+                    training_configs["patience"] = DEFAULT_PATIENCE
+                    training_configs["input_size"] = DEFAULT_INPUT_SIZE
+                    training_configs["batch_size"] = DEFAULT_BATCH_SIZE
+                    training_configs["epochs"] = DEFAULT_EPOCHS
+                    training_configs["cuda"] = is_cuda_available()
+                    training_configs["actual_use_mixed_precision"] = actual_use_mixed_precision
+                    training_configs["optimizer"] = optimizer_name
+                    training_configs["data_normalization_strategy"] = "dataset" if dataset_mean and dataset_std else "ImageNet"
 
-                    # finish WandB run & cleanup
-                    if wandb_run:
-                        print(" Finishing WandB run for this model...")
-                        wandb.finish(exit_code=0, quiet=True)
+                    # init wandb run
+                    dataset_suffix = DATASET_SUFFIX_MAP[dataset_name]
+                    wandb_project_name = f"{model_name}-{num_classes}cls-{dataset_suffix}-{training_mode}-seed{seed}"
 
-                    if is_cuda_available():
-                        torch.cuda.empty_cache()
+                    try:
+                        if wandb.run is not None:
+                            print(f"Finishing previous incomplete WandB run {wandb.run.name}...")
+                            wandb.finish(exit_code=1, quiet=True)
 
-                except Exception as e:
-                    print(f"🚨 Training loop failed for {model_name} ({dataset_suffix})")
-                    print(traceback.format_exc())
+                        wandb_run = wandb.init(
+                            project=wandb_project_name,
+                            config=training_configs,
+                            reinit=True,
+                            tags=[
+                                model_name,
+                                training_mode,
+                                dataset_name.split("/")[-1],
+                                f"seed_{seed}",
+                            ],
+                        )
+                        print(f"👟 WandB Run Initialized: {wandb_run.get_url()}")
+                        print("Run Config:", json.dumps(training_mode, indent=2, default=str))
 
-                    if wandb_run:
-                        wandb.finish(exit_code=1)
-                    raise
-    
+                    except Exception as e:
+                        raise Exception(f"🚨 Failed to initialize W&B run for {model_name}.") from e
+
+                    print(f"🚀 Starting training loop for {model_name}...")
+                    try:
+                        best_model, model_results = train_model(
+                            model=model,
+                            dataloaders=dataloaders_dict,
+                            criterion=criterion,
+                            optimizer=optimizer,
+                            scheduler=lr_scheduler,
+                            num_epochs=DEFAULT_EPOCHS,
+                            patience=DEFAULT_PATIENCE,
+                            use_mixed_precision=actual_use_mixed_precision,
+                            class_names=class_names,
+                            cutmix_or_mixup=True if cutmix_or_mixup else False,
+                        )
+
+                        # print results table
+                        table_str = "\n🏁 Training Summary\n"
+                        table_str += "-" * 20
+                        table_str += f"\n"
+                        table_str += (
+                            f"```json\n{json.dumps(wandb.run.config, indent=2, default=str)}\n\n"
+                        )
+
+                        table_data = []
+
+                        if model_results:
+                            acc = model_results.get("best_val_acc", 0.0) * 100
+                            epoch = model_results.get("best_epoch", -1)
+                            time_mins = model_results.get("train_time", 0.0) / 60
+                            status = "✅ Success" if epoch != -1 else "⚠️ No Improve"
+                            table_data.append([model_name, f"{acc:.2f}%", epoch, f"{time_mins:.1f}", status])
+
+                        else:
+                            table_data.append([model_name, "N/A", "N/A", "N/A", "❓ Unknown"])
+
+                        # table headers
+                        headers = ["Model", "Best Val Acc", "Best Epoch", "Train Time (m)", "Status"]
+                        table_str += "\n" + tabulate(table_data, headers=headers, tablefmt="github")
+                        print("\n" + table_str)
+
+                        # # save to file
+                        # date_str = datetime.now().strftime("%Y_%m_%d")
+                        # output_file = f"{date_str}_res_{wandb.run.name}_{config['training_mode']}.md"
+                        # with open(output_file, "w", encoding="utf-8") as f:
+                        #     f.write(table_str)
+
+                        print(f"\n✨ Trainer finished for {model_name} ({dataset_suffix}). ✨\n")
+
+                        # finish WandB run & cleanup
+                        if wandb_run:
+                            print(" Finishing WandB run for this model...")
+                            wandb.finish(exit_code=0, quiet=True)
+
+                        if is_cuda_available():
+                            torch.cuda.empty_cache()
+
+                    except Exception as e:
+                        print(f"🚨 Training loop failed for {model_name} ({dataset_suffix})")
+                        print(traceback.format_exc())
+
+                        if wandb_run:
+                            wandb.finish(exit_code=1)
+                        raise
+        
     print("\n✨ Trainer finished. ✨\n")
 
 if __name__ == "__main__":

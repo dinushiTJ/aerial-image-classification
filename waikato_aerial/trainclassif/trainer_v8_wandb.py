@@ -35,7 +35,7 @@ from torchvision import models
 from torchvision.transforms import v2 as transforms
 from tqdm.auto import tqdm
 
-load_dotenv("../.env")
+load_dotenv("../../.env")
 
 HF_TOKEN_ENV_VAR = "HF_TOKEN"
 HF_USER_ENV_VAR = "HF_USER"
