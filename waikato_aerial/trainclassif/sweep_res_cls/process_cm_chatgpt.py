@@ -134,8 +134,9 @@ def process_confusion_matrix(csv_path):
     print(f"\nSaved JSON metrics to {json_path}")
 
 
-if __name__ == "__main__":    
-    input_dir = "c:/Users/arcad/Downloads/d/classlvl_analysis/vit"
+if __name__ == "__main__":
+    model_dir = "efficientnet"
+    input_dir = f"C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/seed34793895/{model_dir}"
     
     for file in os.listdir(input_dir):
         if file.endswith(".csv") and "loss" not in file:
