@@ -136,7 +136,7 @@ def process_confusion_matrix(csv_path):
 
 if __name__ == "__main__":
     base_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/"
-    seeds = [1417352920, 319080682, 3892354109, 34793895]
+    seeds = [1417352920, 319080682, 3892354109, 34793895, 42]
     models = ["efficientnet", "resnet50", "vit"]
 
     input_dirs = []
