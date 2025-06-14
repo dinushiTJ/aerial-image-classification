@@ -135,10 +135,21 @@ def process_confusion_matrix(csv_path):
 
 
 if __name__ == "__main__":
-    model_dir = "efficientnet"
-    input_dir = f"C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/seed34793895/{model_dir}"
+    base_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/"
+    seeds = [1417352920, 319080682, 3892354109, 34793895]
+    models = ["efficientnet", "resnet50", "vit"]
+
+    input_dirs = []
+    for s in seeds:
+        for m in models:
+            input_dirs.append(f"{base_dir}seed{s}/{m}")
     
-    for file in os.listdir(input_dir):
-        if file.endswith(".csv") and "loss" not in file:
-            csv_file_path = os.path.join(input_dir, file)
-            process_confusion_matrix(csv_file_path)
+    if not input_dirs:
+        print("No input directories found. Please check the base directory and seeds/models.")
+        exit(1)
+    
+    for d in sorted(input_dirs):
+        for file in os.listdir(d):
+            if file.endswith(".csv") and "loss" not in file:
+                csv_file_path = os.path.join(d, file)
+                process_confusion_matrix(csv_file_path)
