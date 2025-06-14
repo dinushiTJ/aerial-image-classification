@@ -1,0 +1,132 @@
+{
+  "class": {
+    "broadleaved_indigenous_hardwood": {
+      "precision": 0.244499,
+      "recall": 0.299401,
+      "f1": 0.269179,
+      "tp": 100,
+      "fp": 309,
+      "fn": 234,
+      "support": 334
+    },
+    "deciduous_hardwood": {
+      "precision": 0.339426,
+      "recall": 0.389222,
+      "f1": 0.362622,
+      "tp": 130,
+      "fp": 253,
+      "fn": 204,
+      "support": 334
+    },
+    "grose_broom": {
+      "precision": 0.314394,
+      "recall": 0.248503,
+      "f1": 0.277592,
+      "tp": 83,
+      "fp": 181,
+      "fn": 251,
+      "support": 334
+    },
+    "harvested_forest": {
+      "precision": 0.545259,
+      "recall": 0.757485,
+      "f1": 0.634085,
+      "tp": 253,
+      "fp": 211,
+      "fn": 81,
+      "support": 334
+    },
+    "herbaceous_freshwater_vege": {
+      "precision": 0.420354,
+      "recall": 0.284431,
+      "f1": 0.339286,
+      "tp": 95,
+      "fp": 131,
+      "fn": 239,
+      "support": 334
+    },
+    "high_producing_grassland": {
+      "precision": 0.254593,
+      "recall": 0.290419,
+      "f1": 0.271329,
+      "tp": 97,
+      "fp": 284,
+      "fn": 237,
+      "support": 334
+    },
+    "indigenous_forest": {
+      "precision": 0.429412,
+      "recall": 0.437126,
+      "f1": 0.433234,
+      "tp": 146,
+      "fp": 194,
+      "fn": 188,
+      "support": 334
+    },
+    "lake_pond": {
+      "precision": 0.513002,
+      "recall": 0.649701,
+      "f1": 0.573316,
+      "tp": 217,
+      "fp": 206,
+      "fn": 117,
+      "support": 334
+    },
+    "low_producing_grassland": {
+      "precision": 0.22561,
+      "recall": 0.110778,
+      "f1": 0.148594,
+      "tp": 37,
+      "fp": 127,
+      "fn": 297,
+      "support": 334
+    },
+    "manuka_kanuka": {
+      "precision": 0.322176,
+      "recall": 0.230539,
+      "f1": 0.268761,
+      "tp": 77,
+      "fp": 162,
+      "fn": 257,
+      "support": 334
+    },
+    "shortrotation_cropland": {
+      "precision": 0.631854,
+      "recall": 0.724551,
+      "f1": 0.675035,
+      "tp": 242,
+      "fp": 141,
+      "fn": 92,
+      "support": 334
+    },
+    "urban_build_up": {
+      "precision": 0.661972,
+      "recall": 0.703593,
+      "f1": 0.682148,
+      "tp": 235,
+      "fp": 120,
+      "fn": 99,
+      "support": 334
+    },
+    "urban_parkland": {
+      "precision": 0.620579,
+      "recall": 0.577844,
+      "f1": 0.59845,
+      "tp": 193,
+      "fp": 118,
+      "fn": 141,
+      "support": 334
+    }
+  },
+  "global": {
+    "micro_precision": 0.438738,
+    "micro_recall": 0.438738,
+    "micro_f1": 0.438738,
+    "macro_precision": 0.424856,
+    "macro_recall": 0.438738,
+    "macro_f1": 0.425664,
+    "weighted_precision": 0.424856,
+    "weighted_recall": 0.438738,
+    "weighted_f1": 0.425664
+  }
+}
