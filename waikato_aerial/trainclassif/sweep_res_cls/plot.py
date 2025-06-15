@@ -12,6 +12,11 @@ DATASET_ORDER = ['real', 'p10', 'p25', 'p50', 'p75', 'p100', 'p125', 'p150']
 
 # Metrics to analyze
 METRICS = ['accuracy', 'precision', 'recall', 'f1_score']
+mode_labels = {
+    "tl": "Transfer Learning",
+    "sft": "Partial Fine-tuning",
+    "fft": "Full Fine-tuning"
+}
 
 
 def plot_classwise_performance(data: dict, output_dir: str):
@@ -44,7 +49,7 @@ def plot_classwise_performance(data: dict, output_dir: str):
                         x = np.arange(len(valid_datasets))
                         means = np.array(means)
                         stds = np.array(stds)
-                        ax.plot(x, means, label=training_mode)
+                        ax.plot(x, means, label=mode_labels.get(training_mode, training_mode))
                         ax.fill_between(x, means - stds, means + stds, alpha=0.2)
 
                 ax.set_title(f"{class_name} | {model_name} | {metric}", fontsize=11)
