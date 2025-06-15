@@ -21,16 +21,18 @@ mode_labels = {
 
 def plot_classwise_performance(data: dict, output_dir: str):
     os.makedirs(output_dir, exist_ok=True)
-    
+
     for class_name, class_data in data.items():
         for model_name, model_data in class_data.items():
             for metric in METRICS:
                 # Prepare x-axis and series per training mode
                 fig, ax = plt.subplots(figsize=(8, 5))
+
                 for training_mode in ['tl', 'sft', 'fft']:
                     means = []
                     stds = []
                     valid_datasets = []
+                    real_baseline_value = None
 
                     for dataset in DATASET_ORDER:
                         if (
@@ -45,12 +47,19 @@ def plot_classwise_performance(data: dict, output_dir: str):
                                 stds.append(values.std())
                                 valid_datasets.append(dataset)
 
+                                if dataset == 'real':
+                                    real_baseline_value = values.mean()
+
                     if means:
                         x = np.arange(len(valid_datasets))
                         means = np.array(means)
                         stds = np.array(stds)
-                        ax.plot(x, means, label=mode_labels.get(training_mode, training_mode))
+                        ax.plot(x, means, label=mode_labels.get(training_mode, training_mode), linestyle='-')
                         ax.fill_between(x, means - stds, means + stds, alpha=0.2)
+
+                        # Add baseline line for real
+                        if real_baseline_value is not None:
+                            ax.axhline(real_baseline_value, linestyle='--', color='black', linewidth=1, alpha=0.3)
 
                 ax.set_title(f"{class_name} | {model_name} | {metric}", fontsize=11)
                 ax.set_xlabel("Dataset")
@@ -64,9 +73,6 @@ def plot_classwise_performance(data: dict, output_dir: str):
 
                 base_filename = f"{class_name.replace(' ', '_')}_{model_name}_{metric}"
 
-                # png_path = os.path.join(output_dir, base_filename + ".png")
-                # plt.savefig(png_path, dpi=300)
-
                 svg_path = os.path.join(output_dir, base_filename + ".svg")
                 plt.savefig(svg_path, format='svg')
                 plt.close()
@@ -74,7 +80,7 @@ def plot_classwise_performance(data: dict, output_dir: str):
 
 if __name__ == "__main__":
     input_path = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/run_summary_cls.json"
-    output_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/results/classwise_plots/svg"
+    output_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/results/classwise_plots_svg_baseline"
 
     with open(input_path, "r") as f:
         classwise_results = json.load(f)

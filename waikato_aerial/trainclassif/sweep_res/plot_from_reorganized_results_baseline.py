@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tabulate import tabulate
 
+# For reproducibility
+np.random.seed(42)
+
 suffixes = ['real', 'p10', 'p25', 'p50', 'p75', 'p100', 'p125', 'p150']
 training_modes = ['tl', 'sft', 'fft']
 mode_labels = {
@@ -95,7 +98,7 @@ def plot_metric(model_name, model_data, metric_type, title_suffix, output_dir, m
         # Draw baseline line from 'real' dataset value
         if 'real' in suffixes and 'real' in datasets:
             baseline = np.mean(datasets['real'][metric_type])
-            ax.axhline(y=baseline, linestyle='--', color='gray', linewidth=1, alpha=0.3)
+            ax.axhline(y=baseline, linestyle='--', color='black', linewidth=1, alpha=0.3)
 
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
@@ -135,7 +138,7 @@ def plot_metric_with_areas(model_name, model_data, metric_type, title_suffix, ou
 
         if 'real' in suffixes and 'real' in datasets:
             baseline = np.mean(datasets['real'][metric_type])
-            ax.axhline(y=baseline, linestyle='--', color='gray', linewidth=1, alpha=0.3)
+            ax.axhline(y=baseline, linestyle='--', color='black', linewidth=1, alpha=0.3)
 
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
