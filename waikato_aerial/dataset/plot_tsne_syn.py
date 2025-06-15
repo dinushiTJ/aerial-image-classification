@@ -1,12 +1,15 @@
 from datasets import load_dataset
 from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
 import torch
 import numpy as np
 import os
 import random
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 # --- REPRODUCIBILITY ---
 torch.manual_seed(42)
@@ -27,7 +30,7 @@ DATASET_ORDER = [
 NUM_CLASSES = 13
 SAMPLES_PER_CLASS = 10
 SPLIT = "train"
-OUTPUT_PATH = "outputs/tsne_combined.svg"
+OUTPUT_PATH = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_training_datasets_combined.svg"
 
 # --- CLIP MODEL SETUP ---
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").eval().cuda()
