@@ -73,6 +73,7 @@ def save_plot_as_svg(fig, output_dir, filename):
 
 def plot_metric(model_name, model_data, metric_type, title_suffix, output_dir, mode_filter=None):
     fig, ax = plt.subplots(figsize=(10, 5))
+    baseline_drawn = False
     for mode, datasets in model_data.items():
         if mode_filter and mode != mode_filter:
             continue
@@ -89,7 +90,12 @@ def plot_metric(model_name, model_data, metric_type, title_suffix, output_dir, m
                 stds.append(np.std(metric_values))
 
         x = np.arange(len(x_labels))
-        ax.errorbar(x, means, yerr=stds, label=mode_labels.get(mode, mode), capsize=3, marker='o')
+        ax.errorbar(x, means, yerr=stds, label=mode_labels.get(mode, mode), capsize=3)
+
+        # Draw baseline line from 'real' dataset value
+        if 'real' in suffixes and 'real' in datasets:
+            baseline = np.mean(datasets['real'][metric_type])
+            ax.axhline(y=baseline, linestyle='--', color='gray', linewidth=1, alpha=0.3)
 
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
@@ -124,8 +130,12 @@ def plot_metric_with_areas(model_name, model_data, metric_type, title_suffix, ou
         means = np.array(means)
         stds = np.array(stds)
 
-        ax.plot(x, means, label=mode_labels.get(mode, mode), marker='o')
+        ax.plot(x, means, label=mode_labels.get(mode, mode))
         ax.fill_between(x, means - stds, means + stds, alpha=0.2)
+
+        if 'real' in suffixes and 'real' in datasets:
+            baseline = np.mean(datasets['real'][metric_type])
+            ax.axhline(y=baseline, linestyle='--', color='gray', linewidth=1, alpha=0.3)
 
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
@@ -156,7 +166,7 @@ if __name__ == "__main__":
     base_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res"
     run_summary_file = f"{base_dir}/run_summary_reorganized.json"
     results_output_dir = f"{base_dir}/results"
-    plots_output_dir = os.path.join(results_output_dir, "plots", "svg")
+    plots_output_dir = os.path.join(results_output_dir, "plots_svg_baseline")
 
     with open(run_summary_file, "r") as f:
         run_summary = json.load(f)
