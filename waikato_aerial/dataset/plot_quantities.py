@@ -18,23 +18,34 @@ HF_IDS = {
 
 api = HfApi()
 split = "train"
-output_path = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/dataset/plots/dataset_size_bar.svg"
+output_path = "/home/dj191/research/code/waikato_aerial/dataset/plots/dataset_size_bar.svg"
 dataset_counts = []
+
+print("Starting dataset size extraction...\n")
 
 for label in DATASET_ORDER:
     repo_id = HF_IDS[label]
-    try:
-        info = api.dataset_info(repo_id, files_metadata=False)
-        # The dataset card doesn't list splits directly, so we
-        # load metadata without data to get the split size
-        from datasets import load_dataset
+    print(f"Processing dataset: {label} ({repo_id})")
 
+    try:
+        print(f"  Fetching dataset info...")
+        info = api.dataset_info(repo_id, files_metadata=False)
+
+        print(f"  Loading '{split}' split with streaming...")
+        from datasets import load_dataset
         ds = load_dataset(repo_id, split=split, streaming=True)
+
+        print(f"  Counting examples...")
         count = sum(1 for _ in ds)
+        print(f"  -> Found {count} examples.")
     except Exception as e:
-        print(f"Error fetching train size for {repo_id}: {e}")
+        print(f"  !!! Error fetching train size for {repo_id}: {e}")
         count = 0
+
     dataset_counts.append((label, count))
+
+print("\nAll dataset sizes extracted.")
+print("Creating bar chart...")
 
 # Plotting
 labels, sizes = zip(*dataset_counts)
@@ -42,6 +53,7 @@ plt.figure(figsize=(10, 6))
 bars = plt.bar(labels, sizes, color="steelblue")
 plt.xticks(rotation=45, ha="right")
 plt.ylabel("Number of Training Examples")
+plt.xlabel("Datasets")
 plt.title("Training Split Sizes Across Datasets")
 
 for bar, val in zip(bars, sizes):
@@ -52,3 +64,5 @@ os.makedirs(os.path.dirname(output_path), exist_ok=True)
 plt.tight_layout()
 plt.savefig(output_path, format="svg")
 plt.close()
+
+print(f"Plot saved to {output_path}")
