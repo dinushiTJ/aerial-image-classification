@@ -65,14 +65,14 @@ USE_MIXED_PRECISION = True
 AUGMENT_LEVEL = "none"
 DEFAULT_EPOCHS = 50
 DATASETS = {
-    "dushj98/aerial_real_only",
-    # "dushj98/aerial_real_plus_0010",
-    # "dushj98/aerial_real_plus_0025",
+    # "dushj98/aerial_real_only",
+    "dushj98/aerial_real_plus_0010",
+    "dushj98/aerial_real_plus_0025",
     # "dushj98/aerial_real_plus_0050",
-    # "dushj98/aerial_real_plus_0075",
-    "dushj98/aerial_real_plus_0100",
+    "dushj98/aerial_real_plus_0075",
+    # "dushj98/aerial_real_plus_0100",
     # "dushj98/aerial_real_plus_0125",
-    "dushj98/aerial_real_plus_0150",
+    # "dushj98/aerial_real_plus_0150",
 }
 DATASET_SUFFIX_MAP = {
     "dushj98/aerial_real_only": "real",
