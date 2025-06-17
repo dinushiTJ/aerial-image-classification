@@ -13,7 +13,7 @@ DATASET_ORDER = ['real', 'p10', 'p25', 'p50', 'p75', 'p100', 'p125', 'p150']
 # Metrics to analyze
 METRICS = ['accuracy', 'precision', 'recall', 'f1_score']
 mode_labels = {
-    "tl": "Transfer Learning",
+    "tl": "Feature Extraction",
     "sft": "Partial Fine-tuning",
     "fft": "Full Fine-tuning"
 }

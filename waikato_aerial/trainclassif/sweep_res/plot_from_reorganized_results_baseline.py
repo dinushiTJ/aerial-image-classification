@@ -11,7 +11,7 @@ np.random.seed(42)
 suffixes = ['real', 'p10', 'p25', 'p50', 'p75', 'p100', 'p125', 'p150']
 training_modes = ['tl', 'sft', 'fft']
 mode_labels = {
-    "tl": "Transfer Learning",
+    "tl": "Feature Extraction",
     "sft": "Partial Fine-tuning",
     "fft": "Full Fine-tuning"
 }

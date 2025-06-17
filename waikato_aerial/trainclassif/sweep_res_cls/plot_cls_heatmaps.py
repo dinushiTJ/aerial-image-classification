@@ -14,7 +14,7 @@ MODELS = {
     "vit": "ViT B 16"
 }
 TRAINING_MODES = {
-    "tl": "Transfer Learning",
+    "tl": "Feature Extraction",
     "sft": "Partial Fine-tuning",
     "fft": "Full Fine-tuning"
 }

@@ -3,13 +3,12 @@ import os
 from sklearn.manifold import TSNE
 from datasets import load_dataset
 from PIL import Image
-from transformers import AutoImageProcessor, AutoModel
 import torch
 import random
-
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from prithvi_mae import pretrain_mae_vit_base_patch16_dec512d8b  # from repo
 
 # --- REPRODUCIBILITY ---
 torch.manual_seed(42)
@@ -30,14 +29,25 @@ DATASET_ORDER = [
 NUM_CLASSES = 13
 SAMPLES_PER_CLASS = 10
 SPLIT = "train"
-BASE_OUTPUT_DIR = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v4_prith"
+BASE_OUTPUT_DIR = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v4_prith_v2"
 COMBINED_OUTPUT_PATH = os.path.join(BASE_OUTPUT_DIR, "tsne_combined.svg")
 os.makedirs(BASE_OUTPUT_DIR, exist_ok=True)
 
-prithvi_model = AutoModel.from_pretrained("MVRL/remote-clip-vit-base-patch32").eval().cuda()
-prithvi_processor = AutoImageProcessor.from_pretrained("MVRL/remote-clip-vit-base-patch32")
+# --- Load Prithvi 2.0 MAE model manually ---
+model = pretrain_mae_vit_base_patch16_dec512d8b()
+ckpt = torch.load("/path/to/Prithvi_EO_V2_600M.pt", map_location="cpu")
+model.load_state_dict(ckpt["model"])
+model.eval().cuda()
 
-# --- Feature Extraction Helper ---
+# --- Image Preprocessing ---
+import torchvision.transforms as T
+transform = T.Compose([
+    T.Resize((224, 224)),
+    T.ToTensor(),
+    T.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+])
+
+# --- Feature Extraction ---
 def extract_features(dataset_name):
     features, labels = [], []
     print(f"Loading: {dataset_name}")
@@ -54,28 +64,17 @@ def extract_features(dataset_name):
             img = sample["image"]
             if not isinstance(img, Image.Image):
                 img = Image.fromarray(img)
-            inputs = prithvi_processor(images=img, return_tensors="pt").to("cuda")
+            img = transform(img).unsqueeze(0).to("cuda")
             with torch.no_grad():
-                feat = prithvi_model(**inputs).last_hidden_state[:, 0, :].cpu().numpy().squeeze()
+                feat = model.forward_encoder(img)[0].mean(dim=1).cpu().numpy().squeeze()
             features.append(feat)
             labels.append(cls)
     return np.array(features), labels
 
 # --- Clear, distinct colors for 13 classes ---
 colors = [
-    "#1f77b4",  # muted blue
-    "#ff7f0e",  # safety orange
-    "#2ca02c",  # cooked asparagus green
-    "#d62728",  # brick red
-    "#9467bd",  # muted purple
-    "#8c564b",  # chestnut brown
-    "#e377c2",  # raspberry yogurt pink
-    "#7f7f7f",  # middle gray
-    "#bcbd22",  # curry yellow-green
-    "#17becf",  # blue-teal
-    "#aec7e8",  # light blue
-    "#ffbb78",  # light orange
-    "#98df8a",  # light green
+    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
+    "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78", "#98df8a"
 ]
 
 # --- Plotting and main loop ---
