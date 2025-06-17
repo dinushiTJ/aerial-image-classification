@@ -35,7 +35,7 @@ DATASET_ORDER = [
 NUM_CLASSES = 13
 SAMPLES_PER_CLASS = 10
 SPLIT = "train"
-BASE_OUTPUT_DIR = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v4_2"
+BASE_OUTPUT_DIR = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v4_dinov2"
 os.makedirs(BASE_OUTPUT_DIR, exist_ok=True)
 
 # --- CLIP MODEL SETUP ---
