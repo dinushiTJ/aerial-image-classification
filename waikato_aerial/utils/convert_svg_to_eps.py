@@ -4,6 +4,7 @@ import os
 import cairosvg
 
 input_dirs = [
+    # ✅ done
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds",
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v1",
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v4_2",
@@ -14,9 +15,9 @@ input_dirs = [
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v1",
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v4_2",
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v4_2_dinov2",
-    "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res/results/plots_svg_baseline",
-    "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res_cls/results/classwise_plots_svg_baseline",
-    "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res_cls/results/per_class_heatmaps"
+    # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res/results/plots_svg_baseline",
+    # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res_cls/results/classwise_plots_svg_baseline",
+    # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res_cls/results/per_class_heatmaps"
 ]
 
 for input_dir in input_dirs:
