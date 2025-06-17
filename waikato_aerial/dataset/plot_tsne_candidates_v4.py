@@ -1,11 +1,11 @@
-from datasets import load_dataset
-from sklearn.manifold import TSNE
-import torch
 import numpy as np
 import os
-import random
+from sklearn.manifold import TSNE
+from datasets import load_dataset
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
+import torch
+import random
 
 import matplotlib
 matplotlib.use('Agg')
@@ -20,29 +20,54 @@ random.seed(42)
 DATASET_ORDER = [
     ("real", "dushj98/waikato_aerial_imagery_2017"),
     ("v0", "dushj98/waikato_aerial_2017_synthetic_v0"),
-    ("v1", "dushj98/waikato_aerial_2017_synthetic_v1"),
-    ("v2", "dushj98/waikato_aerial_2017_synthetic_v2"),
-    ("ti_v1", "dushj98/waikato_aerial_2017_synthetic_ti_v1"),
-    ("ti_v2", "dushj98/waikato_aerial_2017_synthetic_ti_v2"),
+    # ("v1", "dushj98/waikato_aerial_2017_synthetic_v1"),
+    # ("v2", "dushj98/waikato_aerial_2017_synthetic_v2"),
+    # ("ti_v1", "dushj98/waikato_aerial_2017_synthetic_ti_v1"),
+    # ("ti_v2", "dushj98/waikato_aerial_2017_synthetic_ti_v2"),
     ("v0_up", "dushj98/waikato_aerial_2017_synthetic_v0_upscaled"),
-    ("v1_up", "dushj98/waikato_aerial_2017_synthetic_v1_upscaled"),
-    ("v2_up", "dushj98/waikato_aerial_2017_synthetic_v2_upscaled"),
-    ("ti_v1_up", "dushj98/waikato_aerial_2017_synthetic_ti_v1_upscaled"),
-    ("ti_v2_up", "dushj98/waikato_aerial_2017_synthetic_ti_v2_upscaled"),
-    ("best_cmmd", "dushj98/waikato_aerial_2017_synthetic_best_cmmd"),
-    ("best_fid", "dushj98/waikato_aerial_2017_synthetic_best_fid")
+    # ("v1_up", "dushj98/waikato_aerial_2017_synthetic_v1_upscaled"),
+    # ("v2_up", "dushj98/waikato_aerial_2017_synthetic_v2_upscaled"),
+    # ("ti_v1_up", "dushj98/waikato_aerial_2017_synthetic_ti_v1_upscaled"),
+    # ("ti_v2_up", "dushj98/waikato_aerial_2017_synthetic_ti_v2_upscaled"),
+    # ("best_cmmd", "dushj98/waikato_aerial_2017_synthetic_best_cmmd"),
+    # ("best_fid", "dushj98/waikato_aerial_2017_synthetic_best_fid")
 ]
 NUM_CLASSES = 13
 SAMPLES_PER_CLASS = 10
 SPLIT = "train"
-BASE_OUTPUT_DIR = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v4_2"
+BASE_OUTPUT_DIR = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v4_2_v0up"
+COMBINED_OUTPUT_PATH = os.path.join(BASE_OUTPUT_DIR, "tsne_combined.svg")
 os.makedirs(BASE_OUTPUT_DIR, exist_ok=True)
 
 # --- CLIP MODEL SETUP ---
-clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").eval().cuda()
-clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").eval().cuda()
+clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
 
-# --- Color Setup: same 13 distinct colors ---
+# --- Feature Extraction Helper ---
+def extract_features(dataset_name):
+    features, labels = [], []
+    print(f"Loading: {dataset_name}")
+    ds = load_dataset(dataset_name, split=SPLIT)
+    class_buckets = {i: [] for i in range(NUM_CLASSES)}
+    for item in ds:
+        if len(class_buckets[item['label']]) < SAMPLES_PER_CLASS:
+            class_buckets[item['label']].append(item)
+        if all(len(v) >= SAMPLES_PER_CLASS for v in class_buckets.values()):
+            break
+
+    for cls, samples in class_buckets.items():
+        for sample in samples:
+            img = sample["image"]
+            if not isinstance(img, Image.Image):
+                img = Image.fromarray(img)
+            inputs = clip_processor(images=img, return_tensors="pt").to("cuda")
+            with torch.no_grad():
+                feat = clip_model.get_image_features(**inputs).cpu().numpy().squeeze()
+            features.append(feat)
+            labels.append(cls)
+    return np.array(features), labels
+
+# --- Clear, distinct colors for 13 classes ---
 colors = [
     "#1f77b4",  # muted blue
     "#ff7f0e",  # safety orange
@@ -59,83 +84,44 @@ colors = [
     "#98df8a",  # light green
 ]
 
-# --- FEATURE EXTRACTION ---
-def extract_features(dataset_name):
-    print(f"Loading: {dataset_name}")
-    ds = load_dataset(dataset_name, split=SPLIT)
-    features, labels = [], []
-    buckets = {i: [] for i in range(NUM_CLASSES)}
-
-    for item in ds:
-        if len(buckets[item['label']]) < SAMPLES_PER_CLASS:
-            buckets[item['label']].append(item)
-        if all(len(v) >= SAMPLES_PER_CLASS for v in buckets.values()):
-            break
-
-    for cls, samples in buckets.items():
-        for sample in samples:
-            img = sample["image"]
-            if not isinstance(img, Image.Image):
-                img = Image.fromarray(img)
-            inputs = clip_processor(images=img, return_tensors="pt").to("cuda")
-            with torch.no_grad():
-                feat = clip_model.get_image_features(**inputs).cpu().numpy().squeeze()
-            features.append(feat)
-            labels.append(cls)
-
-    return np.array(features), np.array(labels)
-
-# --- PLOT FUNCTION ---
-def plot_tsne(embeddings, labels, title, path, figsize=(6,5), scatter_size=20, alpha=0.7, legend=True, ax=None):
-    if ax is None:
-        plt.figure(figsize=figsize)
-        ax = plt.gca()
-        created_fig = True
-    else:
-        created_fig = False
-
-    for cls in range(NUM_CLASSES):
-        idx = labels == cls
-        ax.scatter(embeddings[idx, 0], embeddings[idx, 1], 
-                   color=colors[cls], label=f"Class {cls}", s=scatter_size, alpha=alpha)
-    ax.set_title(title, fontsize=14 if not created_fig else 16)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    if legend:
-        ax.legend(fontsize=10 if not created_fig else 12, loc='best')
-    if created_fig:
-        plt.tight_layout()
-        plt.savefig(path, format="svg")
-        plt.close()
-
-# --- MAIN LOOP ---
-n = len(DATASET_ORDER)
+# --- Plotting and main loop ---
+num_plots = len(DATASET_ORDER)
 cols = 3
-rows = (n + cols - 1) // cols
-fig, axes = plt.subplots(rows, cols, figsize=(cols * 6, rows * 5))
-axes = axes.flatten()
+rows = (num_plots + cols - 1) // cols
+fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5))
+axs = axs.flatten()
 
-for idx, (label, ds_name) in enumerate(DATASET_ORDER):
-    feats, labs = extract_features(ds_name)
+for idx, (ds_label, ds_name) in enumerate(DATASET_ORDER):
+    features, labels = extract_features(ds_name)
 
     tsne = TSNE(n_components=2, perplexity=30, init='pca', random_state=42)
-    emb = tsne.fit_transform(feats)
+    embeddings = tsne.fit_transform(features)
 
-    # Save individual plot immediately
-    indiv_path = os.path.join(BASE_OUTPUT_DIR, f"tsne_{label}_solo.svg")
-    plot_tsne(emb, labs, f"t-SNE: {label}", indiv_path, legend=True)
+    # Individual plot
+    indiv_path = os.path.join(BASE_OUTPUT_DIR, f"tsne_{ds_label}.svg")
+    plt.figure(figsize=(7, 5))
+    for cls in range(NUM_CLASSES):
+        indices = np.array(labels) == cls
+        plt.scatter(embeddings[indices, 0], embeddings[indices, 1], color=colors[cls], label=f"Class {cls}", alpha=0.7, s=30)
+    plt.title(f"t-SNE: {ds_label}", fontsize=14)
+    plt.legend(fontsize=8)
+    plt.tight_layout()
+    plt.savefig(indiv_path, format="svg")
+    plt.close()
+    print(f"Saved to {indiv_path}")
 
-    # Add to combined plot without legend (to avoid clutter)
-    ax = axes[idx]
-    plot_tsne(emb, labs, f"{label}", None, ax=ax, legend=False)
+    # Add to combined grid
+    ax = axs[idx]
+    for cls in range(NUM_CLASSES):
+        indices = np.array(labels) == cls
+        ax.scatter(embeddings[indices, 0], embeddings[indices, 1], color=colors[cls], label=f"Class {cls}", alpha=0.7, s=20)
+    ax.set_title(f"{ds_label}", fontsize=14)
+    ax.legend(fontsize=8, loc='upper right', markerscale=0.5)
 
-# Remove unused axes
-for j in range(idx + 1, len(axes)):
-    fig.delaxes(axes[j])
+# Clean unused axes
+for j in range(num_plots, len(axs)):
+    fig.delaxes(axs[j])
 
 plt.tight_layout()
-combined_path = os.path.join(BASE_OUTPUT_DIR, "all_tsne_individuals.svg")
-fig.savefig(combined_path, format="svg")
-plt.close()
-
-print(f"Saved individual plots and combined grid to {BASE_OUTPUT_DIR}")
+fig.savefig(COMBINED_OUTPUT_PATH, format="svg")
+print(f"Combined figure saved to {COMBINED_OUTPUT_PATH}")
