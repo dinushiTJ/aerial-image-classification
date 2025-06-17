@@ -30,11 +30,11 @@ DATASET_ORDER = [
 NUM_CLASSES = 13
 SAMPLES_PER_CLASS = 10
 SPLIT = "train"
-OUTPUT_PATH = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_training_datasets_combined.svg"
+OUTPUT_PATH = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v1/tsne_training_datasets_combined.svg"
 
 # --- CLIP MODEL SETUP ---
-clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").eval().cuda()
-clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").eval().cuda()
+clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
 
 # --- FEATURE COLLECTION ---
 features, labels, domains = [], [], []

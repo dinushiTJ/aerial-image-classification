@@ -22,24 +22,25 @@ DATASET_ORDER = [
     ("v0", "dushj98/waikato_aerial_2017_synthetic_v0"),
     ("v1", "dushj98/waikato_aerial_2017_synthetic_v1"),
     ("v2", "dushj98/waikato_aerial_2017_synthetic_v2"),
-    ("ti_v1", "dushj98/waikato_aerial_2017_synthetic_ti_v1"),
-    ("ti_v2", "dushj98/waikato_aerial_2017_synthetic_ti_v2"),
-    ("v0_up", "dushj98/waikato_aerial_2017_synthetic_v0_upscaled"),
-    ("v1_up", "dushj98/waikato_aerial_2017_synthetic_v1_upscaled"),
-    ("v2_up", "dushj98/waikato_aerial_2017_synthetic_v2_upscaled"),
-    ("ti_v1_up", "dushj98/waikato_aerial_2017_synthetic_ti_v1_upscaled"),
-    ("ti_v2_up", "dushj98/waikato_aerial_2017_synthetic_ti_v2_upscaled"),
-    ("best_cmmd", "dushj98/waikato_aerial_2017_synthetic_best_cmmd"),
-    ("best_fid", "dushj98/waikato_aerial_2017_synthetic_best_fid")
+    # ("ti_v1", "dushj98/waikato_aerial_2017_synthetic_ti_v1"),
+    # ("ti_v2", "dushj98/waikato_aerial_2017_synthetic_ti_v2"),
+    # ("v0_up", "dushj98/waikato_aerial_2017_synthetic_v0_upscaled"),
+    # ("v1_up", "dushj98/waikato_aerial_2017_synthetic_v1_upscaled"),
+    # ("v2_up", "dushj98/waikato_aerial_2017_synthetic_v2_upscaled"),
+    # ("ti_v1_up", "dushj98/waikato_aerial_2017_synthetic_ti_v1_upscaled"),
+    # ("ti_v2_up", "dushj98/waikato_aerial_2017_synthetic_ti_v2_upscaled"),
+    # ("best_cmmd", "dushj98/waikato_aerial_2017_synthetic_best_cmmd"),
+    # ("best_fid", "dushj98/waikato_aerial_2017_synthetic_best_fid")
 ]
 NUM_CLASSES = 13
 SAMPLES_PER_CLASS = 10
 SPLIT = "train"
-OUTPUT_PATH = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_combined.svg"
+BASE_PATH = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v1"
+OUTPUT_PATH = f"{BASE_PATH}/tsne_candidates_real_comb_v012.svg"
 
 # --- CLIP MODEL SETUP ---
-clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").eval().cuda()
-clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").eval().cuda()
+clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
 
 # --- FEATURE COLLECTION ---
 features, labels, domains = [], [], []

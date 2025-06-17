@@ -35,8 +35,8 @@ COMBINED_OUTPUT_PATH = os.path.join(BASE_OUTPUT_DIR, "tsne_combined.svg")
 os.makedirs(BASE_OUTPUT_DIR, exist_ok=True)
 
 # --- CLIP MODEL SETUP ---
-clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").eval().cuda()
-clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").eval().cuda()
+clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
 
 # --- Feature Extraction Helper ---
 def extract_features(dataset_name):

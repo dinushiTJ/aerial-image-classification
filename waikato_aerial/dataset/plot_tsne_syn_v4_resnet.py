@@ -39,20 +39,26 @@ os.makedirs(BASE_OUTPUT_DIR, exist_ok=True)
 class ResNet34UNetEncoder(nn.Module):
     def __init__(self):
         super().__init__()
-        base_model = models.resnet34(pretrained=False)
-        self.encoder = nn.Sequential(*list(base_model.children())[:-2])  # up to last conv block
+        base_model = models.resnet34(weights=None)
+        self.encoder = nn.Sequential(*list(base_model.children())[:-2])
 
     def forward(self, x):
-        return self.encoder(x)  # shape (B, C, H, W)
+        return self.encoder(x)
 
 # --- Load model weights ---
 model = ResNet34UNetEncoder().cuda()
-state_dict = torch.load("/path/to/FLAIR-INC_rgbie_15cl_resnet34-unet_weights.pth", map_location="cuda")
-model.load_state_dict(state_dict, strict=False)  # Allow partial load if decoder not present
+state_dict = torch.load("/home/dj191/Downloads/FLAIR-INC_rgbie_15cl_resnet34-unet_weights.pth", map_location="cuda")
+model.load_state_dict(state_dict, strict=False)
 model.eval()
 
 # --- Image preprocessing ---
+def to_3channel(img):
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+    return img
+
 preprocess = transforms.Compose([
+    transforms.Lambda(to_3channel),
     transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -75,9 +81,10 @@ def extract_features(dataset_name):
             img = sample["image"]
             if not isinstance(img, Image.Image):
                 img = Image.fromarray(img)
+            img = img.convert("RGB")
             img_tensor = preprocess(img).unsqueeze(0).cuda()
             with torch.no_grad():
-                feat_map = model(img_tensor)  # (1, C, H, W)
+                feat_map = model(img_tensor)
                 feat = feat_map.mean(dim=(2, 3)).squeeze().cpu().numpy()
             features.append(feat)
             labels.append(cls)

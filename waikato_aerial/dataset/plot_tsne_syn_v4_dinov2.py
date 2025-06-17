@@ -35,8 +35,8 @@ COMBINED_OUTPUT_PATH = os.path.join(BASE_OUTPUT_DIR, "tsne_combined.svg")
 os.makedirs(BASE_OUTPUT_DIR, exist_ok=True)
 
 # --- CLIP MODEL SETUP ---
-dinov2_processor = AutoImageProcessor.from_pretrained("facebook/dinov2-base")
-dinov2_model = AutoModel.from_pretrained("facebook/dinov2-base").eval().cuda()
+dinov2_processor = AutoImageProcessor.from_pretrained("facebook/dinov2-giant")
+dinov2_model = AutoModel.from_pretrained("facebook/dinov2-giant").eval().cuda()
 
 # --- Feature Extraction Helper ---
 def extract_features(dataset_name):
