@@ -33,6 +33,12 @@ SPLIT = "train"
 OUTPUT_DIR = f"/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v5_fittransform_n{SAMPLES_PER_CLASS}_v2"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# --- Colors for classes ---
+COLORS = [
+    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
+    "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78", "#98df8a"
+]
+
 # --- CLIP MODEL SETUP ---
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").eval().cuda()
 clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-336")
@@ -60,26 +66,28 @@ def extract_features(dataset_name):
     return np.array(features), np.array(labels)
 
 
-def plot_real(embedding_real, real_labels) -> None:
+def plot_individual_graph(embeddings, labels, aug_name = "") -> None:
+    if aug_name:
+        title = f"t-SNE: Augmented Dataset {aug_name}"
+        path_suffix = aug_name.lower().replace(" ", "_").replace("-", "_")
+    else:
+        title = "t-SNE: Real Dataset"
+        path_suffix = "real"
+
+
     fig_real, ax_real = plt.subplots(figsize=(10, 8))
     for cls in range(NUM_CLASSES):
         idxs = real_labels == cls
         ax_real.scatter(
             embedding_real[idxs, 0], embedding_real[idxs, 1],
-            color=colors[cls], label=f"Class {cls}", alpha=0.8, s=30, marker='o'
+            color=COLORS[cls], label=f"Class {cls}", alpha=0.8, s=30, marker='o'
         )
-    ax_real.set_title("t-SNE: Real Dataset")
+    ax_real.set_title(title)
     ax_real.legend(fontsize=9, markerscale=1.0, loc='best', ncol=2)
     fig_real.tight_layout()
-    real_path = os.path.join(OUTPUT_DIR, "tsne_real_only.svg")
+    real_path = os.path.join(OUTPUT_DIR, f"tsne_{path_suffix}.svg")
     fig_real.savefig(real_path, format="svg")
     plt.close(fig_real)
-
-# --- Colors for classes ---
-colors = [
-    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
-    "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78", "#98df8a"
-]
 
 # --- Extract features for real dataset once ---
 real_feats, real_labels = extract_features(REAL_DATASET[1])
@@ -95,7 +103,7 @@ tsne = TSNE(
 embedding_real = tsne.fit(real_feats)
 
 # plot real only
-plot_real(embedding_real, real_labels) 
+plot_individual_graph(embedding_real, real_labels) 
 
 # --- Loop over synthetic datasets ---
 for syn_label, syn_name in SYNTHETIC_DATASETS:
@@ -105,6 +113,7 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
 
     # Transform SYNTHETIC data to the real t-SNE embedding space
     embedding_syn = embedding_real.transform(syn_feats)
+    plot_individual_graph(embedding_syn, syn_labels, aug_name=syn_label)
 
     # Plot combined embedding
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -114,7 +123,7 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
         idxs = real_labels == cls
         ax.scatter(
             embedding_real[idxs, 0], embedding_real[idxs, 1],
-            color=colors[cls], label=f"Real Class {cls}", alpha=0.3, s=30, marker='o'
+            color=COLORS[cls], label=f"Real Class {cls}", alpha=0.3, s=30, marker='o'
         )
 
     # Plot synthetic data with stronger alpha
@@ -122,7 +131,7 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
         idxs = syn_labels == cls
         ax.scatter(
             embedding_syn[idxs, 0], embedding_syn[idxs, 1],
-            color=colors[cls], label=f"Aug Class {cls}", alpha=0.7, s=30, marker='x'
+            color=COLORS[cls], label=f"Aug Class {cls}", alpha=0.7, s=30, marker='x'
         )
 
     ax.set_title(f"t-SNE: Real vs Augmented Datasets ({syn_label})")
