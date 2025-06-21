@@ -1,6 +1,9 @@
 import os
 import json
 import pandas as pd
+
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 json_files = [
@@ -14,9 +17,12 @@ json_files = [
     "synthetic_v1_upscaled_res_cls_fid.json", "synthetic_v1_upscaled_res_cls.json",
     "synthetic_v2_res_cls_fid.json", "synthetic_v2_res_cls.json",
     "synthetic_v2_upscaled_res_cls_fid.json", "synthetic_v2_upscaled_res_cls.json"
+    # "synthetic_best_cmmd_res_ds.json", "synthetic_best_cmmd_res_ds_fid.json",
+    # "synthetic_best_fid_res_ds.json", "synthetic_best_fid_res_ds_fid.json"
 ]
 
-base_dir = "../similarity/"
+base_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/similarity/res"
+save_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/scoretables/plots_cls"
 
 # Dictionary to store data for each class
 class_data = {}
@@ -73,32 +79,35 @@ for token, entries in class_data.items():
     print(f"Lowest FID: {lowest_fid['FID']} (Dataset: {lowest_fid['Dataset']})")
     print("\n" + "=" * 50 + "\n")
 
-    # # Plotting
-    # fig, ax1 = plt.subplots(figsize=(12, 6))
+    # Plotting
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    ax1.grid(True, linestyle='--', alpha=0.5)
 
-    # # Sort datasets properly
-    # df["Dataset"] = pd.Categorical(df["Dataset"], categories=df["Dataset"].unique(), ordered=True)
-    # df.sort_values("Dataset", inplace=True)
+    # Sort datasets properly
+    df["Dataset"] = pd.Categorical(df["Dataset"], categories=df["Dataset"].unique(), ordered=True)
+    df.sort_values("Dataset", inplace=True)
 
-    # color = "tab:blue"
-    # ax1.set_xlabel("Dataset")
-    # ax1.set_ylabel("CMMD", color=color)
-    # ax1.plot(df["Dataset"], df["CMMD"], color=color, marker="o", label="CMMD")
-    # ax1.tick_params(axis="y", labelcolor=color)
+    color = "#d4d414"
+    ax1.set_xlabel("Dataset")
+    ax1.set_ylabel("CMMD")
+    ax1.plot(df["Dataset"], df["CMMD"], color=color, marker="o", label="CMMD")
+    ax1.tick_params(axis="y")
 
-    # # Second axis for FID
-    # ax2 = ax1.twinx()
-    # color = "tab:red"
-    # ax2.set_ylabel("FID", color=color)
-    # ax2.plot(df["Dataset"], df["FID"], color=color, marker="x", label="FID")
-    # ax2.tick_params(axis="y", labelcolor=color)
+    # Second axis for FID
+    ax2 = ax1.twinx()
+    color = "#10aabb"
+    ax2.set_ylabel("FID")
+    ax2.plot(df["Dataset"], df["FID"], color=color, marker="x", label="FID")
+    ax2.tick_params(axis="y")
 
-    # # Formatting
-    # plt.title(f"CMMD and FID Scores by Dataset (Class: {token})")
-    # fig.tight_layout()
-    # plt.xticks(rotation=45, ha="right")
+    # Formatting
+    plt.title(f"CMMD and FID Scores by Dataset (Class: {token})")
+    fig.tight_layout()
+    plt.xticks(rotation=45, ha="right")
 
-    # ax1.legend(loc="upper left")
-    # ax2.legend(loc="upper right")
+    ax1.legend(loc="upper left")
+    ax2.legend(loc="upper right")
 
-    # plt.show()
+    plt.savefig(f"{save_dir}/v2_{token}.svg", format="svg")
+    plt.close()
+    print(f"Saved to {save_dir}/v2_{token}.svg")

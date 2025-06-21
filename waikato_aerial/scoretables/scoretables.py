@@ -1,6 +1,9 @@
 import os
 import json
 import pandas as pd
+
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
@@ -15,11 +18,13 @@ json_files = [
     "synthetic_v1_upscaled_res_ds_fid.json", "synthetic_v1_upscaled_res_ds.json",
     "synthetic_v2_res_ds_fid.json", "synthetic_v2_res_ds.json",
     "synthetic_v2_upscaled_res_ds_fid.json", "synthetic_v2_upscaled_res_ds.json",
-    "synthetic_best_cmmd_res_ds.json", "synthetic_best_cmmd_res_ds_fid.json",
-    "synthetic_best_fid_res_ds.json", "synthetic_best_fid_res_ds_fid.json"
+    # "synthetic_best_cmmd_res_ds.json", "synthetic_best_cmmd_res_ds_fid.json",
+    # "synthetic_best_fid_res_ds.json", "synthetic_best_fid_res_ds_fid.json"
 ]
 
-base_dir = "../similarity"
+base_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/similarity/res"
+save_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/scoretables/plots_ds"
+suffix = ""
 
 combined_data = {}
 
@@ -55,8 +60,8 @@ combined_df = pd.DataFrame(list(combined_data.values()))
 print("CMMD and FID Scores Table:")
 print(combined_df.to_string(index=False))
 
-combined_df.to_csv("ds_scores.csv")
-combined_df.to_json("ds_scores.json")
+combined_df.to_csv("v2_ds_scores{suffix}.csv")
+combined_df.to_json("v2_ds_scores{suffix}.json")
 
 # Find lowest CMMD and FID scores
 lowest_cmmd = combined_df.loc[combined_df['CMMD'].idxmin()]
@@ -67,31 +72,40 @@ print(f"Lowest FID: {lowest_fid['FID']} (Dataset: {lowest_fid['Dataset']})")
 
 # Plotting
 fig, ax1 = plt.subplots(figsize=(12, 6))
+ax1.grid(True, linestyle='--', alpha=0.5)
 
 # Plot CMMD on the left y-axis
-color = "tab:blue"
+color = "#d4d414"
 ax1.set_xlabel("Dataset")
-ax1.set_ylabel("CMMD", color=color)
+ax1.set_ylabel("CMMD")
 ax1.plot(combined_df["Dataset"], combined_df["CMMD"].astype(float), color=color, marker="o", label="CMMD")
-ax1.tick_params(axis="y", labelcolor=color)
+ax1.tick_params(axis="y")
+
+# Add horizontal line for lowest CMMD
+min_cmmd = combined_df["CMMD"].astype(float).min()
+ax1.axhline(min_cmmd, color="black", linestyle="--", alpha=0.3, label="Lowest CMMD")
 
 # Create a second y-axis for FID
 ax2 = ax1.twinx()
-color = "tab:red"
-ax2.set_ylabel("FID", color=color)
+ax2.grid(False)  # grid already added to ax1
+color = "#10aabb"
+ax2.set_ylabel("FID")
 ax2.plot(combined_df["Dataset"], combined_df["FID"].astype(float), color=color, marker="x", label="FID")
-ax2.tick_params(axis="y", labelcolor=color)
+ax2.tick_params(axis="y")
+
+# Add horizontal line for lowest FID
+min_fid = combined_df["FID"].astype(float).min()
+ax2.axhline(min_fid, color="black", linestyle="--", alpha=0.3, label="Lowest FID")
 
 # Add title and adjust layout
 plt.title("CMMD and FID Scores by Dataset")
 fig.tight_layout()
-
-# Rotate x-axis labels for better readability
 plt.xticks(rotation=45, ha="right")
 
 # Add legends
 ax1.legend(loc="upper left")
 ax2.legend(loc="upper right")
 
-# Show the plot
-plt.show()
+plt.savefig(f"{save_dir}/v2_dataset_sm{suffix}.svg", format="svg")
+plt.close()
+print(f"Saved to {save_dir}/v2_dataset_sm{suffix}.svg")
