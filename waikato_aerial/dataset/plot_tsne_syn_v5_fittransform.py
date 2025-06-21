@@ -103,7 +103,7 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
         idxs = syn_labels == cls
         plt.scatter(
             embedding_syn[idxs, 0], embedding_syn[idxs, 1],
-            color=colors[cls], label=f"Syn Class {cls}", alpha=0.7, s=30, marker='x'
+            color=colors[cls], label=f"Aug Class {cls}", alpha=0.7, s=30, marker='x'
         )
 
     plt.title(f"t-SNE: Real vs Synthetic ({syn_label})")

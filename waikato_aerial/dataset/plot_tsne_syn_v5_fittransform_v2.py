@@ -106,10 +106,10 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
         idxs = syn_labels == cls
         ax.scatter(
             embedding_syn[idxs, 0], embedding_syn[idxs, 1],
-            color=colors[cls], label=f"Syn Class {cls}", alpha=0.7, s=30, marker='x'
+            color=colors[cls], label=f"Aug Class {cls}", alpha=0.7, s=30, marker='x'
         )
 
-    ax.set_title(f"t-SNE: Real vs Synthetic ({syn_label})")
+    ax.set_title(f"t-SNE: Real vs Augmented Datasets ({syn_label})")
     ax.legend(fontsize=9, markerscale=1.0, loc='best', ncol=2)
     fig.tight_layout()
     outpath = os.path.join(OUTPUT_DIR, f"tsne_real_vs_{syn_label}.svg")
@@ -137,7 +137,7 @@ handles = [
     plt.Line2D([0], [0], color=colors[i], marker='o', linestyle='', markersize=6, label=f"Real Class {i}", alpha=0.3)
     for i in range(NUM_CLASSES)
 ] + [
-    plt.Line2D([0], [0], color=colors[i], marker='x', linestyle='', markersize=6, label=f"Syn Class {i}", alpha=0.7)
+    plt.Line2D([0], [0], color=colors[i], marker='x', linestyle='', markersize=6, label=f"Aug Class {i}", alpha=0.7)
     for i in range(NUM_CLASSES)
 ]
 

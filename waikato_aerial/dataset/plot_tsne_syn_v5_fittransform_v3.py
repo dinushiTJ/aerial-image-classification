@@ -77,7 +77,7 @@ for cls in range(NUM_CLASSES):
         embedding_real[idxs, 0], embedding_real[idxs, 1],
         color=colors[cls], label=f"Class {cls}", alpha=0.8, s=30, marker='o'
     )
-ax_real.set_title("t-SNE: Real Data Only")
+ax_real.set_title("t-SNE: Real Dataset")
 ax_real.legend(fontsize=9, markerscale=1.0, loc='best', ncol=2)
 fig_real.tight_layout()
 real_path = os.path.join(OUTPUT_DIR, "tsne_real_only.svg")
@@ -99,10 +99,10 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
             embedding_syn[idxs, 0], embedding_syn[idxs, 1],
             color=colors[cls], label=f"Class {cls}", alpha=0.8, s=30, marker='x'
         )
-    ax.set_title(f"t-SNE: Synthetic Only ({syn_label})")
+    ax.set_title(f"t-SNE: Augmented Dataset ({syn_label})")
     ax.legend(fontsize=9, markerscale=1.0, loc='best', ncol=2)
     fig.tight_layout()
-    syn_path = os.path.join(OUTPUT_DIR, f"tsne_syn_{syn_label}.svg")
+    syn_path = os.path.join(OUTPUT_DIR, f"tsne_aug_{syn_label}.svg")
     fig.savefig(syn_path, format="svg")
     plt.close(fig)
     plot_paths.append(syn_path)
