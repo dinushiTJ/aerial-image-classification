@@ -77,9 +77,9 @@ def plot_individual_graph(embeddings, labels, aug_name = "") -> None:
 
     fig_real, ax_real = plt.subplots(figsize=(10, 8))
     for cls in range(NUM_CLASSES):
-        idxs = real_labels == cls
+        idxs = labels == cls
         ax_real.scatter(
-            embedding_real[idxs, 0], embedding_real[idxs, 1],
+            embeddings[idxs, 0], embeddings[idxs, 1],
             color=COLORS[cls], label=f"Class {cls}", alpha=0.8, s=30, marker='o'
         )
     ax_real.set_title(title)
