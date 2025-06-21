@@ -17,7 +17,9 @@ input_dirs = [
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v4_2_dinov2",
     # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res/results/plots_svg_baseline",
     # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res_cls/results/classwise_plots_svg_baseline",
-    # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res_cls/results/per_class_heatmaps"
+    # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res_cls/results/per_class_heatmaps",
+    "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v5_fittransform_n100",
+    "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v5_fittransform_n666_v2"
 ]
 
 for input_dir in input_dirs:
