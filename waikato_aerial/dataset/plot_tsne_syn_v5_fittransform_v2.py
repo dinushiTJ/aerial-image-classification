@@ -59,6 +59,22 @@ def extract_features(dataset_name):
             labels.append(cls)
     return np.array(features), np.array(labels)
 
+
+def plot_real(embedding_real, real_labels) -> None:
+    fig_real, ax_real = plt.subplots(figsize=(10, 8))
+    for cls in range(NUM_CLASSES):
+        idxs = real_labels == cls
+        ax_real.scatter(
+            embedding_real[idxs, 0], embedding_real[idxs, 1],
+            color=colors[cls], label=f"Class {cls}", alpha=0.8, s=30, marker='o'
+        )
+    ax_real.set_title("t-SNE: Real Dataset")
+    ax_real.legend(fontsize=9, markerscale=1.0, loc='best', ncol=2)
+    fig_real.tight_layout()
+    real_path = os.path.join(OUTPUT_DIR, "tsne_real_only.svg")
+    fig_real.savefig(real_path, format="svg")
+    plt.close(fig_real)
+
 # --- Colors for classes ---
 colors = [
     "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
@@ -78,8 +94,8 @@ tsne = TSNE(
 )
 embedding_real = tsne.fit(real_feats)
 
-# --- Store paths for later composite figure ---
-plot_paths = []
+# plot real only
+plot_real(embedding_real, real_labels) 
 
 # --- Loop over synthetic datasets ---
 for syn_label, syn_name in SYNTHETIC_DATASETS:
@@ -116,42 +132,4 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
     fig.savefig(outpath, format="svg")
     plt.close(fig)
     print(f"Saved plot: {outpath}")
-    plot_paths.append(outpath)
 
-# --- Create composite figure ---
-fig, axes = plt.subplots(nrows=int(np.ceil(len(plot_paths) / 3)), ncols=3, figsize=(20, 14))
-axes = axes.flatten()
-
-# Plot all saved plots into the grid
-for i, path in enumerate(plot_paths):
-    img = Image.open(path)
-    axes[i].imshow(img)
-    axes[i].axis("off")
-
-# Hide any extra subplots
-for j in range(len(plot_paths), len(axes)):
-    axes[j].axis("off")
-
-# Create single legend
-handles = [
-    plt.Line2D([0], [0], color=colors[i], marker='o', linestyle='', markersize=6, label=f"Real Class {i}", alpha=0.3)
-    for i in range(NUM_CLASSES)
-] + [
-    plt.Line2D([0], [0], color=colors[i], marker='x', linestyle='', markersize=6, label=f"Aug Class {i}", alpha=0.7)
-    for i in range(NUM_CLASSES)
-]
-
-fig.legend(
-    handles=handles,
-    loc="lower center",
-    ncol=NUM_CLASSES,
-    fontsize=8,
-    frameon=False,
-    bbox_to_anchor=(0.5, -0.01)
-)
-
-plt.tight_layout()
-composite_path = os.path.join(OUTPUT_DIR, "tsne_composite.svg")
-plt.savefig(composite_path, format="svg", bbox_inches="tight")
-plt.close()
-print(f"Saved composite plot: {composite_path}")
