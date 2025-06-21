@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from openTSNE import TSNE  # pip install opentsne
+from openTSNE import TSNE
 from datasets import load_dataset
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
@@ -17,8 +17,8 @@ np.random.seed(42)
 random.seed(42)
 
 # --- CONFIG ---
-DATASET_ORDER = [
-    ("real",  "dushj98/aerial_real_only"),
+REAL_DATASET = ("real", "dushj98/aerial_real_only")
+SYNTHETIC_DATASETS = [
     ("p10",   "dushj98/aerial_real_plus_0010"),
     ("p25",   "dushj98/aerial_real_plus_0025"),
     ("p50",   "dushj98/aerial_real_plus_0050"),
@@ -28,11 +28,10 @@ DATASET_ORDER = [
     ("p150",  "dushj98/aerial_real_plus_0150"),
 ]
 NUM_CLASSES = 13
-SAMPLES_PER_CLASS = 10
+SAMPLES_PER_CLASS = 100
 SPLIT = "train"
-BASE_OUTPUT_DIR = "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v5_fittransform"
-COMBINED_OUTPUT_PATH = os.path.join(BASE_OUTPUT_DIR, "tsne_combined.svg")
-os.makedirs(BASE_OUTPUT_DIR, exist_ok=True)
+OUTPUT_DIR = f"/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v5_fittransform_n{SAMPLES_PER_CLASS}"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # --- CLIP MODEL SETUP ---
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14-336").eval().cuda()
@@ -41,7 +40,6 @@ clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14-33
 # --- Feature Extraction Helper ---
 def extract_features(dataset_name):
     features, labels = [], []
-    print(f"Loading: {dataset_name}")
     ds = load_dataset(dataset_name, split=SPLIT)
     class_buckets = {i: [] for i in range(NUM_CLASSES)}
     for item in ds:
@@ -49,7 +47,6 @@ def extract_features(dataset_name):
             class_buckets[item['label']].append(item)
         if all(len(v) >= SAMPLES_PER_CLASS for v in class_buckets.values()):
             break
-
     for cls, samples in class_buckets.items():
         for sample in samples:
             img = sample["image"]
@@ -68,62 +65,51 @@ colors = [
     "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78", "#98df8a"
 ]
 
-# --- Extract features for all datasets ---
-features_by_domain = {}
-labels_by_domain = {}
+# --- Extract features for real dataset once ---
+real_feats, real_labels = extract_features(REAL_DATASET[1])
 
-for ds_label, ds_name in DATASET_ORDER:
-    feats, labs = extract_features(ds_name)
-    features_by_domain[ds_label] = feats
-    labels_by_domain[ds_label] = labs
+# Fit t-SNE on REAL data only
+tsne = TSNE(
+    n_components=2,
+    perplexity=30,
+    initialization="pca",
+    random_state=42,
+    verbose=True,
+)
+embedding_real = tsne.fit(real_feats)
 
-# --- t-SNE fit on REAL dataset only ---
-tsne = TSNE(n_components=2, perplexity=30, initialization="pca", random_state=42)
-real_embeddings = tsne.fit(features_by_domain["real"])
+# --- Loop over synthetic datasets ---
+for syn_label, syn_name in SYNTHETIC_DATASETS:
+    print(f"Processing pair: real vs {syn_label}")
 
-# --- Transform other datasets to same space ---
-projected_embeddings = {"real": real_embeddings}
-for ds_label, feats in features_by_domain.items():
-    if ds_label == "real":
-        continue
-    projected_embeddings[ds_label] = tsne.transform(feats)
+    syn_feats, syn_labels = extract_features(syn_name)
 
-# --- Plot individual dataset t-SNE ---
-for ds_label, embeddings in projected_embeddings.items():
-    plt.figure(figsize=(7, 5))
-    labels = labels_by_domain[ds_label]
+    # Transform SYNTHETIC data to the real t-SNE embedding space
+    embedding_syn = embedding_real.transform(syn_feats)
+
+    # Plot combined embedding
+    plt.figure(figsize=(10, 8))
+
+    # Plot real data with lighter alpha
     for cls in range(NUM_CLASSES):
-        idxs = labels == cls
-        plt.scatter(embeddings[idxs, 0], embeddings[idxs, 1], color=colors[cls], label=f"Class {cls}", alpha=0.7, s=30)
-    plt.title(f"t-SNE: {ds_label}")
-    plt.legend(fontsize=8)
+        idxs = real_labels == cls
+        plt.scatter(
+            embedding_real[idxs, 0], embedding_real[idxs, 1],
+            color=colors[cls], label=f"Real Class {cls}", alpha=0.3, s=30, marker='o'
+        )
+
+    # Plot synthetic data with stronger alpha
+    for cls in range(NUM_CLASSES):
+        idxs = syn_labels == cls
+        plt.scatter(
+            embedding_syn[idxs, 0], embedding_syn[idxs, 1],
+            color=colors[cls], label=f"Syn Class {cls}", alpha=0.7, s=30, marker='x'
+        )
+
+    plt.title(f"t-SNE: Real vs Synthetic ({syn_label})")
+    plt.legend(fontsize=6, markerscale=1.0, loc='best', ncol=2)
     plt.tight_layout()
-    indiv_path = os.path.join(BASE_OUTPUT_DIR, f"tsne_{ds_label}.svg")
-    plt.savefig(indiv_path, format="svg")
+    outpath = os.path.join(OUTPUT_DIR, f"tsne_real_vs_{syn_label}.svg")
+    plt.savefig(outpath, format="svg")
     plt.close()
-    print(f"Saved to {indiv_path}")
-
-# --- Combined plot ---
-num_plots = len(DATASET_ORDER)
-cols = 3
-rows = (num_plots + cols - 1) // cols
-fig, axs = plt.subplots(rows, cols, figsize=(cols * 5, rows * 5))
-axs = axs.flatten()
-
-for idx, (ds_label, _) in enumerate(DATASET_ORDER):
-    embeddings = projected_embeddings[ds_label]
-    labels = labels_by_domain[ds_label]
-    ax = axs[idx]
-    for cls in range(NUM_CLASSES):
-        idxs = labels == cls
-        ax.scatter(embeddings[idxs, 0], embeddings[idxs, 1], color=colors[cls], label=f"Class {cls}", alpha=0.7, s=20)
-    ax.set_title(ds_label, fontsize=14)
-    ax.legend(fontsize=6, markerscale=0.5, loc="upper right")
-
-# Remove unused axes
-for j in range(num_plots, len(axs)):
-    fig.delaxes(axs[j])
-
-plt.tight_layout()
-fig.savefig(COMBINED_OUTPUT_PATH, format="svg")
-print(f"Combined figure saved to {COMBINED_OUTPUT_PATH}")
+    print(f"Saved plot: {outpath}")
