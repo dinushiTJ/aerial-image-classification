@@ -9,6 +9,7 @@ import random
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from io import BytesIO
 
 # Reproducibility
 torch.manual_seed(42)
@@ -27,9 +28,9 @@ SYNTHETIC_DATASETS = [
     ("p150",  "dushj98/aerial_real_plus_0150"),
 ]
 NUM_CLASSES = 13
-SAMPLES_PER_CLASS = 2
+SAMPLES_PER_CLASS = 666
 SPLIT = "train"
-OUTPUT_DIR = f"/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v5_fittransform_n{SAMPLES_PER_CLASS}_v4"
+OUTPUT_DIR = f"/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_syn_v5_fittransform_n{SAMPLES_PER_CLASS}_v2"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # CLIP Model Setup
@@ -77,14 +78,20 @@ for cls in range(NUM_CLASSES):
         embedding_real[idxs, 0], embedding_real[idxs, 1],
         color=colors[cls], alpha=0.8, s=30, marker='o'
     )
-ax_real.set_title("t-SNE: Real Dataset")
+ax_real.set_title("t-SNE: Real Data Only")
 fig_real.tight_layout()
 real_path = os.path.join(OUTPUT_DIR, "tsne_real_only.svg")
 fig_real.savefig(real_path, format="svg")
+
+# Save fig to memory
+buf_real = BytesIO()
+fig_real.savefig(buf_real, format="png")
+buf_real.seek(0)
+real_img = Image.open(buf_real)
 plt.close(fig_real)
 
-# Store plot paths
-plot_paths = [real_path]
+# Store image objects
+plot_images = [real_img]
 
 # Generate synthetic plots
 for syn_label, syn_name in SYNTHETIC_DATASETS:
@@ -98,23 +105,25 @@ for syn_label, syn_name in SYNTHETIC_DATASETS:
             embedding_syn[idxs, 0], embedding_syn[idxs, 1],
             color=colors[cls], alpha=0.8, s=30, marker='x'
         )
-    ax.set_title(f"t-SNE: Augmented Dataset ({syn_label})")
+    ax.set_title(f"t-SNE: Synthetic Only ({syn_label})")
     fig.tight_layout()
-    syn_path = os.path.join(OUTPUT_DIR, f"tsne_aug_{syn_label}.svg")
-    fig.savefig(syn_path, format="svg")
+
+    buf_syn = BytesIO()
+    fig.savefig(buf_syn, format="png")
+    buf_syn.seek(0)
+    syn_img = Image.open(buf_syn)
+    plot_images.append(syn_img)
     plt.close(fig)
-    plot_paths.append(syn_path)
 
 # Create composite figure
-fig, axes = plt.subplots(nrows=int(np.ceil(len(plot_paths) / 3)), ncols=3, figsize=(20, 14))
+fig, axes = plt.subplots(nrows=int(np.ceil(len(plot_images) / 3)), ncols=3, figsize=(20, 14))
 axes = axes.flatten()
 
-for i, path in enumerate(plot_paths):
-    img = Image.open(path)
+for i, img in enumerate(plot_images):
     axes[i].imshow(img)
     axes[i].axis("off")
 
-for j in range(len(plot_paths), len(axes)):
+for j in range(len(plot_images), len(axes)):
     axes[j].axis("off")
 
 # Create single legend for all classes
