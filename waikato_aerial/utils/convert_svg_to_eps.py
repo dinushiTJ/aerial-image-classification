@@ -24,6 +24,7 @@ input_dirs = [
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v5_fittransform_n666_v2_dino",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/scoretables/plots_ds",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/scoretables/plots_cls",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res/results/plots_svg_baseline_delta_v3",  # ✅ done
 ]
 
 for input_dir in input_dirs:

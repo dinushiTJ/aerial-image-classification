@@ -166,7 +166,7 @@ def plot_curves_per_model(run_summary: dict, output_dir: str, areas: bool = Fals
             plot_fn(model_name, model_data, "loss", f"{mode}_only", output_dir, mode_filter=mode)
 
 if __name__ == "__main__":
-    base_dir = "C:/Users/arcad/Downloads/d/repo/aerial-image-classification/waikato_aerial/trainclassif/sweep_res"
+    base_dir = "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res"
     run_summary_file = f"{base_dir}/run_summary_reorganized.json"
     results_output_dir = f"{base_dir}/results"
     plots_output_dir = os.path.join(results_output_dir, "plots_svg_baseline")
