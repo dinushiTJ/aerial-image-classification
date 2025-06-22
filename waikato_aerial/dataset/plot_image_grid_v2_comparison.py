@@ -43,7 +43,7 @@ def save_class_samples_grid_svg(
         ax.axis("off")
 
     # Add caption under the figure
-    fig.suptitle(caption, fontsize=12, y=0.05)
+    fig.suptitle(caption, fontsize=12, y=0.10)
     plt.subplots_adjust(top=0.95, bottom=0.15)
 
     plt.savefig(output_path, format='svg')
@@ -52,16 +52,19 @@ def save_class_samples_grid_svg(
 
 if __name__ == "__main__":
     output_svg_path = "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison"
-    class_name = "broadleaved_indigenous_hardwood"
+    import os
+    os.makedirs(output_svg_path, exist_ok=True)
+
+    class_name = "shortrotation_cropland"
 
     datasets = {
-        "dushj98/waikato_aerial_imagery_2017", "Ground truth images of {class_name} from Waikato Aerial 2017",
-        "dushj98/aerial_synthetic_base_50", "Synthetic images of {class_name} from direct Stable Diffusion inference",
-        "dushj98/waikato_aerial_2017_synthetic_best_cmmd", "Synthetic images of {class_name} from fine-tuned Stable Diffusion inference",
+        "dushj98/waikato_aerial_imagery_2017": f"Ground truth images: {class_name}\nfrom Waikato Aerial 2017",
+        "dushj98/aerial_synthetic_base_50": f"Synthetic images: {class_name}\nfrom direct Stable Diffusion inference",
+        "dushj98/waikato_aerial_2017_synthetic_best_cmmd": f"Synthetic images: {class_name}\nfrom fine-tuned Stable Diffusion inference",
     }
     samples = 4
 
-    for ds, caption in enumerate(datasets):
+    for ds, caption in datasets.items():
         ds_name = ds.split("/")[-1]
         save_class_samples_grid_svg(
             dataset_name=ds,
@@ -71,3 +74,4 @@ if __name__ == "__main__":
             caption=caption,
             seed=42,
         )
+        print(f"Saved: {ds_name}")

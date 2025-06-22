@@ -25,6 +25,19 @@ input_dirs = [
     # "/home/dj191/research/code/waikato_aerial/scoretables/plots_ds",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/scoretables/plots_cls",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/trainclassif/sweep_res/results/plots_svg_baseline_delta_v3",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/bih_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/dhw_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/gbm_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/hft_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/hfv_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/hpg_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/igf_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/lpd_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/lpg_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/mka_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/src_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/ubu_4",  # ✅ done
+    # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/upl_4",  # ✅ done
 ]
 
 for input_dir in input_dirs:
