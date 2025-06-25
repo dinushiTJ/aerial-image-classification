@@ -38,6 +38,7 @@ input_dirs = [
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/src_4",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/ubu_4",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds_comparison/upl_4",  # ✅ done
+    "/home/dj191/research/code/waikato_aerial/dataset/plots/ds/base"
 ]
 
 for input_dir in input_dirs:
