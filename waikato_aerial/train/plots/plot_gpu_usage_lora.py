@@ -2,10 +2,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load CSV
-df = pd.read_csv('your_file.csv')  # Replace with your actual filename
+df = pd.read_csv('/home/dj191/research/code/waikato_aerial/train/plots/lora.csv')  # Replace with your actual filename
 
 # Rename columns for convenience
-df.columns = ['time_sec', 'gpu0_bytes', 'gpu1_bytes']
+df.columns = ['time_sec', 'gpu0_bytes', 'x', 'y', 'gpu1_bytes', 'p', 'q']
 
 # Convert time to minutes and memory to GB
 df['time_min'] = df['time_sec'] / 60
@@ -25,5 +25,5 @@ plt.legend()
 
 # Save as SVG
 plt.tight_layout()
-plt.savefig('gpu_memory_dreambooth_lora.svg', format='svg')
+plt.savefig('/home/dj191/research/code/waikato_aerial/train/plots/gpu/gpu_lora.svg', format='svg')
 plt.close()

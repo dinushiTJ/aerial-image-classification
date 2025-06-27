@@ -2,10 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load CSV
-df = pd.read_csv('your_file.csv')  # Replace with your actual file name
-
+df = pd.read_csv('/home/dj191/research/code/waikato_aerial/train/plots/ti.csv')  # Replace with your actual file name
 # Rename for easier access
-df.columns = ['time_sec', 'memory_bytes']
+df.columns = ['time_sec', 'memory_bytes', 'x', 'y']
 
 # Convert time to minutes and memory to GB
 df['time_min'] = df['time_sec'] / 60
@@ -22,5 +21,5 @@ plt.grid(True, linestyle='--', alpha=0.5)
 
 # Save as SVG
 plt.tight_layout()
-plt.savefig('gpu_memory_textual_inversions.svg', format='svg')
+plt.savefig('/home/dj191/research/code/waikato_aerial/train/plots/gpu/gpu_ti.svg', format='svg')
 plt.close()
