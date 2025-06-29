@@ -1,5 +1,5 @@
 {
-    "efficientnet_b2 (tl)": {
+    "efficientnet_b2  (fe)": {
         "real": {
             "accuracy": {
                 "mean": 0.4041455550437586,
@@ -81,7 +81,7 @@
             }
         }
     },
-    "efficientnet_b2 (sft)": {
+    "efficientnet_b2 (pft)": {
         "real": {
             "accuracy": {
                 "mean": 0.5111929986181483,
@@ -245,7 +245,7 @@
             }
         }
     },
-    "resnet50 (tl)": {
+    "resnet50  (fe)": {
         "real": {
             "accuracy": {
                 "mean": 0.42367572547213267,
@@ -327,7 +327,7 @@
             }
         }
     },
-    "resnet50 (sft)": {
+    "resnet50 (pft)": {
         "real": {
             "accuracy": {
                 "mean": 0.482081989866421,
@@ -491,7 +491,7 @@
             }
         }
     },
-    "vit_b_16 (tl)": {
+    "vit_b_16  (fe)": {
         "real": {
             "accuracy": {
                 "mean": 0.4620451404882543,
@@ -573,7 +573,7 @@
             }
         }
     },
-    "vit_b_16 (sft)": {
+    "vit_b_16 (pft)": {
         "real": {
             "accuracy": {
                 "mean": 0.5096269000460617,

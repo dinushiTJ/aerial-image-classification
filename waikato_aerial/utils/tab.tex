@@ -1,0 +1,40 @@
+
+% Table 2: Best hyperparameters for ViT-B/16, EfficientNet-B2, and ResNet-50 in each mode
+% \begin{sidewaystable} 
+%     \centering
+%     \footnotesize
+%     \begin{threeparttable}
+%     % The rest of your table code is unchanged
+%     \begin{tabular}{lccccccccc}
+%         \toprule
+%         & \multicolumn{3}{c}{\texttt{ViT-B/16}} & \multicolumn{3}{c}{\texttt{ResNet-50}} & \multicolumn{3}{c}{\texttt{EfficientNet-B2}} \\
+%         \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+%         Hyperparameter & TL & SFT & FFT & TL & SFT & FFT & TL & SFT & FFT \\
+%         \midrule
+%         Best Val Accuracy & 0.4581 & 0.5111 & 0.5205 & 0.4263 & 0.4800 & 0.5058 & 0.4005 & 0.5035 & 0.5292 \\
+%         Dropout & 0.2 & 0.4 & 0.5 & 0.5 & 0.2 & 0.4 & 0.1 & 0.4 & 0.3 \\
+%         Learning Rate & 5e-4 & 1e-4 & 5e-6 & 3e-4 & 7e-6 & 7e-6 & 2e-4 & 4e-5 & 1e-5 \\
+%         Label Smoothing & 0.0 & 0.2 & 0.0 & 0.2 & 0.0 & 0.0 & 0.0 & 0.2 & 0.2 \\
+%         Weight Decay & 0.13 & 0.06 & 0.06 & 0.02 & 0.19 & 0.04 & 0.02 & 0.14 & 0.03 \\
+%         Scheduler & cosine & cosine & plateau & plateau & plateau & plateau & plateau & cosine & plateau \\
+%         Optimiser & Adam & AdamW & AdamW & Adam & AdamW & AdamW & Adam & AdamW & AdamW \\
+%         Best Epoch & 19 & 4 & 7 & 13 & 48 & 32 & 21 & 12 & 48 \\
+%         Patience & 10 & 15 & 15 & 15 & 10 & 10 & 10 & 10 & 10 \\
+%         \midrule
+%         \multicolumn{10}{l}{\textit{Common Hyperparameters}} \\
+%         \midrule
+%         Augment Level & \multicolumn{9}{c}{None} \\
+%         Batch Size & \multicolumn{9}{c}{32} \\
+%         CutMix or MixUp & \multicolumn{9}{c}{True} \\
+%         CutMix Alpha & \multicolumn{9}{c}{1.0} \\
+%         MixUp Alpha & \multicolumn{9}{c}{0.2} \\
+%         Mixed Precision & \multicolumn{9}{c}{True} \\
+%         Normalisation & \multicolumn{9}{c}{ImageNet} \\
+%         Epochs & \multicolumn{9}{c}{50} \\
+%         Num Classes & \multicolumn{9}{c}{13} \\
+%         \bottomrule
+%     \end{tabular}
+%     \caption{Best hyperparameters for \texttt{ViT-B/16}, \texttt{ResNet-50}, and \texttt{EfficientNet-B2} under each transfer learning mode.}
+%     \label{tab:combined_best_params}
+%     \end{threeparttable}
+% \end{sidewaystable}
