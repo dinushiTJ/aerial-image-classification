@@ -3,7 +3,7 @@ import os
 # pip install cairosvg
 import cairosvg
 
-input_dirs = [
+input_dirs = ["/Users/dinushijayasinghe/Desktop/R2/aerial-image-classification/waikato_aerial/trainclassif/sweep_res_cls/results/per_class_heatmaps_perc"
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/ds",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v1",  # ✅ done
     # "/home/dj191/research/code/waikato_aerial/dataset/plots/tsne_candidates_v4_2",  # ✅ done
