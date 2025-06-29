@@ -46,7 +46,7 @@ for model_key, model_label in MODELS.items():
         sns.heatmap(
             heatmap_data,
             annot=True,
-            fmt=".1f",
+            fmt=".2f",
             xticklabels=DATASET_ORDER,
             yticklabels=class_names,
             cmap="YlGnBu",
